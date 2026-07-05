@@ -10,3 +10,10 @@
 [19:05:42] metric B_library_entries = 16
 [19:05:42] library written (3576 chars)
 [19:05:42] Phase C: with library injected
+[19:09:22] metric C_success = 0.579
+[19:09:22] metric C_episodes = 38
+[19:09:22] metric C_errors = 22
+[19:09:22] metric C_cost_usd = 3.78
+[19:09:22] metric delta_pp = -12.1
+[19:09:22] metric total_spend_usd = 10.05
+[19:09:22] metric gate1_verdict = FAIL

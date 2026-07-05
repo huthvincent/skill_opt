@@ -1,0 +1,30 @@
+{
+  "A_success": 0.7,
+  "A_episodes": 60,
+  "A_errors": 0,
+  "A_cost_usd": 5.81,
+  "projected_total_usd": 14.12,
+  "A_failed_task_ids": [
+    "16",
+    "2",
+    "20",
+    "21",
+    "22",
+    "27",
+    "28",
+    "3",
+    "4",
+    "6",
+    "7",
+    "8"
+  ],
+  "B_optimizer_cost_usd": 0.465,
+  "B_library_entries": 16,
+  "C_success": 0.579,
+  "C_episodes": 38,
+  "C_errors": 22,
+  "C_cost_usd": 3.78,
+  "delta_pp": -12.1,
+  "total_spend_usd": 10.05,
+  "gate1_verdict": "FAIL"
+}

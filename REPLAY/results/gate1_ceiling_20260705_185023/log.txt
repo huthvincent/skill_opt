@@ -1,0 +1,8 @@
+[18:50:23] Phase A: baseline (no library)
+[18:55:39] metric A_success = 0.7
+[18:55:39] metric A_episodes = 60
+[18:55:39] metric A_errors = 0
+[18:55:39] metric A_cost_usd = 5.81
+[18:55:39] metric projected_total_usd = 14.12
+[18:55:39] Phase B: generating ceiling library from failures + gold criteria
+[18:55:39] metric A_failed_task_ids = ['16', '2', '20', '21', '22', '27', '28', '3', '4', '6', '7', '8']

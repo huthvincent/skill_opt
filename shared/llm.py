@@ -85,7 +85,7 @@ def chat(
     model: str | None = None,
     role: str = "agent",  # agent | optimizer | judge -> picks MODEL_* default from .env
     max_tokens: int = 4096,
-    temperature: float = 1.0,
+    temperature: float | None = None,
     tracker: CostTracker | None = None,
 ) -> str:
     """One user-turn completion. Returns the text of the reply."""
@@ -95,15 +95,31 @@ def chat(
     kwargs: dict = dict(
         model=model,
         max_tokens=max_tokens,
-        temperature=temperature,
         messages=[{"role": "user", "content": prompt}],
     )
+    if temperature is not None:
+        kwargs["temperature"] = temperature
     if system:
         kwargs["system"] = system
-    resp = _client().messages.create(**kwargs)
+    try:
+        resp = _client().messages.create(**kwargs)
+    except Exception as e:  # some models (fable-5) reject temperature outright
+        if "temperature" in kwargs and "temperature" in str(e):
+            kwargs.pop("temperature")
+            resp = _client().messages.create(**kwargs)
+        else:
+            raise
     if tracker is not None:
         tracker.add(model, resp.usage.input_tokens, resp.usage.output_tokens)
-    return "".join(block.text for block in resp.content if block.type == "text")
+    text = "".join(block.text for block in resp.content if block.type == "text")
+    if not text.strip():
+        # never return empty silently - a reasoning model can burn the whole
+        # max_tokens budget on thinking and emit zero text (bit us in Gate 1)
+        raise RuntimeError(
+            f"empty text reply from {model} (max_tokens={max_tokens} likely "
+            f"consumed by reasoning; usage={resp.usage}) - raise max_tokens "
+            f"or use a non-reasoning model for this role")
+    return text
 
 
 if __name__ == "__main__":

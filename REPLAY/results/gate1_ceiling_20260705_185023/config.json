@@ -1,0 +1,17 @@
+{
+  "experiment": "Gate1",
+  "domain": "retail",
+  "n_tasks": 30,
+  "trials": 2,
+  "max_steps": 30,
+  "seed": 42,
+  "model": "anthropic/claude-haiku-4-5-20251001",
+  "cap_usd": 20.0,
+  "gate_pp": 0.1,
+  "run_id": "gate1_ceiling_20260705_185023",
+  "git_commit": "27da204",
+  "started_at": "2026-07-05T18:50:23",
+  "argv": [
+    "REPLAY/script/gate1_ceiling.py"
+  ]
+}

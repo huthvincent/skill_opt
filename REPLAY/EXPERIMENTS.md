@@ -12,6 +12,12 @@
 | E0.3 | 模块 A 提案质量人工检查 | E0.2 日志 → 失败聚类 → 候选条目，人工评 10 条 | ≤$10 | ⬜ | |
 | E0.4 | replay 探针 test-retest 稳定性 | 同一决策点重放 ×5，测判定一致率 | ≤$10 | ⬜ | |
 
+## Sanity Check 系列（`docs/sanity_check.md`，owner 批准 Gate 1 预算 ~$12 / 硬顶 $20）
+
+| ID | 目的 | 配置要点 | 预算 | 状态 | run_id |
+|---|---|---|---|---|---|
+| Gate 1 | 天花板：好经验库到底有没有用（≥+10pp 过） | retail 30 题 × 2 trial × {无库, 强库}；强库由 optimizer 看失败轨迹+gold criteria 生成（允许作弊但禁任务专属 ID）；haiku 全角色 | 设计 ~$13 / 硬顶 $20 | 🔵 运行中 | gate1_ceiling_* |
+
 ## E1 主实验系列（需 `Doc/budget_estimate.md` 审批后启动）
 
 | ID | 目的 | 状态 |

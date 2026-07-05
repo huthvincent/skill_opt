@@ -13,6 +13,10 @@ data/generated_logs/*
 !data/raw/.gitkeep
 !data/generated_logs/.gitkeep
 
+# 上游仓库（重建方式见 third_party/README.md；必须先 clone 再 uv sync）
+third_party/*
+!third_party/README.md
+
 # 实验中间产物
 **/results/**/cache/
 

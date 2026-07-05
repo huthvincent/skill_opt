@@ -71,6 +71,13 @@ def _client():
     return Anthropic()
 
 
+def _mock_chat(prompt: str, model: str, tracker: CostTracker | None) -> str:
+    """LLM_BACKEND=mock: zero-cost canned reply for offline pipeline tests."""
+    if tracker is not None:
+        tracker.add(model, in_tok=0, out_tok=0)
+    return f"[mock reply to {len(prompt)} chars]"
+
+
 def chat(
     prompt: str,
     *,
@@ -83,6 +90,8 @@ def chat(
 ) -> str:
     """One user-turn completion. Returns the text of the reply."""
     model = model or os.environ.get(f"MODEL_{role.upper()}", "claude-sonnet-5")
+    if os.environ.get("LLM_BACKEND", "anthropic").lower() == "mock":
+        return _mock_chat(prompt, model, tracker)
     kwargs: dict = dict(
         model=model,
         max_tokens=max_tokens,

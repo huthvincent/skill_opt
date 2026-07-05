@@ -10,5 +10,6 @@
 
 | 脚本 | 职责 | 状态 |
 |---|---|---|
-| `smoke_tau2.py` | E0.1 冒烟：τ²-bench 单域跑通全链路 | ⬜ 待写（第一个要写的） |
-| `gen_logs_tau2.py` | E0.2：弱 agent × persona 生成"历史日志" | ⬜ 待写 |
+| `tau2_probe.py` | E0.0：零 LLM 结构探测（任务加载、事后 verifier、persona 注入点、env 构建） | ✅ 2026-07-05 通过 |
+| `smoke_tau2.py` | E0.1 冒烟：τ²-bench 单域跑通全链路 | ⬜ 待写（下一个） |
+| `gen_logs_tau2.py` | E0.2：弱 agent × persona 生成"历史日志"（persona 全部自注入——E0.0 发现原生任务 persona 为空） | ⬜ 待写 |

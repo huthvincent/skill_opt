@@ -1,0 +1,11 @@
+{
+  "experiment": "E0.0",
+  "llm_calls": 0,
+  "tau2_commit": "1901a301961cbbe3fd11f3e84a2a376530c759e3",
+  "run_id": "tau2_probe_20260705_043549",
+  "git_commit": "fc01842",
+  "started_at": "2026-07-05T04:35:49",
+  "argv": [
+    "REPLAY/script/tau2_probe.py"
+  ]
+}

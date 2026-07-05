@@ -23,7 +23,8 @@
 
 ```bash
 cd /data2/zhu11/skill_Opt
-~/.local/bin/uv sync                 # 装好 .venv（首次）
+# 新机器第一步：先恢复 third_party（见 third_party/README.md），否则 uv sync 会失败
+~/.local/bin/uv sync                 # 装好 .venv（Python 3.12，含 τ²-bench editable）
 cp .env.example .env                 # 填入 API key（永不 commit）
 ~/.local/bin/uv run python -m shared.llm --selftest   # 验证 LLM 通路
 cd REPLAY/latex && latexmk -pdf main.tex              # 编译论文 PDF

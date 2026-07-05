@@ -1,0 +1,25 @@
+{
+  "task_sets": "mock,airline,retail,telecom_full,telecom_small,telecom,telecom-workflow,banking_knowledge",
+  "n_tasks_retail": 114,
+  "n_tasks_airline": 50,
+  "n_tasks_telecom": 114,
+  "retail_persona_coverage": "0/114",
+  "retail_reward_basis_dist": {
+    "RewardType.DB": 114,
+    "RewardType.NL_ASSERTION": 112
+  },
+  "posthoc_eval_importable": true,
+  "evaluation_types": [
+    "ENV",
+    "COMMUNICATE",
+    "ACTION",
+    "ALL",
+    "NL_ASSERTIONS",
+    "ALL_WITH_NL_ASSERTIONS",
+    "ALL_IGNORE_BASIS",
+    "ALL_WITH_NL_ASSERTIONS_IGNORE_BASIS"
+  ],
+  "persona_config_injectable": true,
+  "env_constructible_no_llm": true,
+  "env_type": "Environment"
+}

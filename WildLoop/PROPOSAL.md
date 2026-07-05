@@ -15,4 +15,4 @@
 ## 依赖与前置
 
 - 复用 REPLAY：优化器全套、judge 封装、日志 schema、τ²-bench 接入。
-- 新增：WildChat 画像挖掘管线；simulator 接地层（τ²-bench user simulator 的 persona/行为注入接口，冒烟时确认其可注入性——**这是本篇最大的技术风险，REPLAY E0.2 阶段顺手验证**）。
+- 新增：WildChat 画像挖掘管线；simulator 接地层。~~persona 可注入性是本篇最大技术风险~~ → **已解除**（2026-07-05，REPLAY E0.0 确认 `UserSimulator(persona_config=PersonaConfig(...))` 是官方注入接口，且原生任务 persona 字段为空、注入即全量控制，见 `REPLAY/results/tau2_probe_20260705_043549/REPORT.md`）。

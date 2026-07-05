@@ -5,8 +5,9 @@
 | 文件 | 职责 | 关键约定 |
 |---|---|---|
 | `paths.py` | 项目内全部路径常量 + `new_run_id()` | 其他任何文件不许出现绝对路径字面量 |
-| `llm.py` | **唯一**的 LLM 调用入口，Anthropic API / AWS Bedrock 双后端（`.env` 的 `LLM_BACKEND` 切换），内置计费累计与预算熔断（`CostTracker`） | 实验脚本不许直接 import anthropic/boto3；每个 run 必须传入带 `max_cost_usd` 的 tracker |
+| `llm.py` | **唯一**的 LLM 调用入口，anthropic / bedrock / **mock** 三后端（`.env` 的 `LLM_BACKEND` 切换；mock 零成本，离线测管线用），内置计费累计与预算熔断（`CostTracker`） | 实验脚本不许直接 import anthropic/boto3；每个 run 必须传入带 `max_cost_usd` 的 tracker |
 | `fetch_bib.py` | 从 arXiv API 抓权威 BibTeX，生成两篇论文的 `refs.bib` | 纯 stdlib；加新文献 = 改 `ARXIV_IDS` 后重跑；不许手改 refs.bib（手工条目放各自 latex/ 下的 `extra_refs.bib`） |
+| `runharness.py` | run 目录契约的执行者：`Run(results_root, run_id, config)` 自动生成 config.json（含 git hash）/ log.txt / metrics.json / REPORT.md | 每个实验脚本必须用它，不许手搓 run 目录 |
 
 ## 用法速查
 

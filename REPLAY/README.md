@@ -5,16 +5,17 @@
 
 ## 当前状态（最后更新：2026-07-05）
 
-**阶段：骨架刚建好，冒烟验证未开始。**
+**阶段：E0.0 零成本结构探测已通过，协议四依赖全部确认。** 关键事实：事后 `evaluate_simulation()` 可对已存轨迹算 reward（隐藏 verifier 协议可行）；`PersonaConfig` 官方注入接口存在且原生任务 persona 为空（用户多样性完全自控）；tau2 内部走 litellm、直接读 `ANTHROPIC_API_KEY`。
 
 ## 下一步（按顺序）
 
-1. ⬜ clone τ²-bench 到 `third_party/`，pin commit 并登记（见 `third_party/README.md`）
-2. ⬜ `script/smoke_tau2.py`：单域（retail）5 任务，弱 agent（haiku、无经验库）跑通 rollout + judge 打分 + REPORT.md 自动生成，验证 `shared/llm.py` 通路与预算熔断
-3. ⬜ `script/gen_logs_tau2.py`：弱 agent × ≥3 persona simulator 批量生成"历史日志"到 `data/generated_logs/`（隐藏 verifier 结果的日志 schema 在此脚本中定义）
-4. ⬜ 模块 A 最小版（失败聚类 + 候选条目提案），人工检查提案质量
-5. ⬜ replay 探针稳定性预实验（PROPOSAL §5 风险第 2 条）
-6. ⬜ 写 `Doc/budget_estimate.md` 交 owner 审批 → 主实验
+1. ✅ ~~clone τ²-bench~~（pin `1901a30`，已入 uv 环境，Python 升 3.12）
+2. ✅ ~~E0.0 结构探测~~（run: `tau2_probe_20260705_043549`）
+3. ⬜ `script/smoke_tau2.py`（E0.1）：单域（retail）5 任务，弱 agent（haiku、无经验库）跑通 rollout + judge 打分 + REPORT.md，验证预算熔断。**≤$5，需 owner 点头再跑**
+4. ⬜ `script/gen_logs_tau2.py`（E0.2）：弱 agent × ≥3 自注入 persona 批量生成"历史日志"到 `data/generated_logs/`（日志 schema 定稿于 `Doc/log_schema.md`）
+5. ⬜ 模块 A 最小版（失败聚类 + 候选条目提案），人工检查提案质量（E0.3）
+6. ⬜ replay 探针稳定性预实验（E0.4，PROPOSAL §5 风险第 2 条）
+7. ⬜ 写 `Doc/budget_estimate.md` 交 owner 审批 → 主实验
 
 ## 目录索引
 

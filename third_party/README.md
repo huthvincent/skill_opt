@@ -4,12 +4,13 @@
 
 | 仓库 | 用途 | pin 的 commit | 状态 |
 |---|---|---|---|
-| `tau2-bench/` (github.com/sierra-research/tau2-bench) | REPLAY 主实验环境（retail/airline/telecom + user simulator + DB-state verifier） | 待 clone 时登记 | ⬜ 待 clone（REPLAY 冒烟第一步） |
+| `tau2-bench/` (github.com/sierra-research/tau2-bench) | REPLAY 主实验环境（retail/airline/telecom 等 6 域 + user simulator + DB-state verifier） | `1901a301961cbbe3fd11f3e84a2a376530c759e3`（2026-07-01） | ✅ 已 clone，以 uv workspace member 方式装入环境（要求 Python ≥3.12，项目环境已升到 3.12） |
 
-## 复原命令模板
+## 复原命令（新机器必须按此顺序：先 clone 再 uv sync，否则 workspace 解析失败）
 
 ```bash
 cd third_party
 git clone https://github.com/sierra-research/tau2-bench
-cd tau2-bench && git checkout <上表登记的 commit>
+cd tau2-bench && git checkout 1901a301961cbbe3fd11f3e84a2a376530c759e3
+cd ../.. && ~/.local/bin/uv sync
 ```

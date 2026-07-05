@@ -1,0 +1,28 @@
+{
+  "tau2_exit_code": 0,
+  "n_simulations": 5,
+  "terminations": [
+    "user_stop",
+    "user_stop",
+    "infrastructure_error",
+    "infrastructure_error",
+    "infrastructure_error"
+  ],
+  "rewards": [
+    1.0,
+    0.0,
+    null,
+    null,
+    null
+  ],
+  "success_rate": "1/5",
+  "cost_per_episode_usd": [
+    0.0803,
+    0.0854,
+    0,
+    0,
+    0
+  ],
+  "total_cost_usd": 0.1657,
+  "under_cap": true
+}

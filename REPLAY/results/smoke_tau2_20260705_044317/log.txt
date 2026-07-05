@@ -1,0 +1,8 @@
+[04:43:17] exec: /data2/zhu11/skill_Opt/.venv/bin/tau2 run --domain retail --task-set-name retail --num-tasks 5 --num-trials 1 --agent llm_agent --agent-llm anthropic/claude-haiku-4-5-20251001 --user user_simulator --user-llm anthropic/claude-haiku-4-5-20251001 --max-steps 30 --seed 42 --max-concurrency 2 --save-to smoke_tau2_20260705_044317
+[04:47:32] metric tau2_exit_code = 0
+[04:47:32] metric n_simulations = 5
+[04:47:32] metric rewards = [0.0, 1.0, None, None, None]
+[04:47:32] metric success_rate = 1/5
+[04:47:32] metric cost_per_episode_usd = [0.0608, 0.0711, 0, 0, 0]
+[04:47:32] metric total_cost_usd = 0.1319
+[04:47:32] metric under_cap = True

@@ -4,6 +4,6 @@
 
 | 文档 | 内容 | 状态 |
 |---|---|---|
-| `budget_estimate.md` | 主实验预算估算（进入 E1 前必须写，owner 审批后才准跑，CONSTITUTION §6） | ⬜ |
+| `budget_estimate.md` | 主实验预算估算（进入 E1 前必须写，owner 审批后才准跑，CONSTITUTION §6） | 🔵 v0 初稿（E0.1 实测锚定；E0.2 后出正式版送审） |
 | `log_schema.md` | "历史日志"的字段定义与隐藏 verifier 协议（E0.2 时写） | ⬜ |
 | `baseline_notes.md` | 各 baseline 复现细节与偏离原文之处（审稿人一定会问） | ⬜ |

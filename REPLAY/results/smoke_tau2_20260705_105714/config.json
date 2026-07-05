@@ -1,0 +1,18 @@
+{
+  "experiment": "E0.1",
+  "domain": "retail",
+  "n_tasks": 5,
+  "max_steps": 30,
+  "seed": 42,
+  "agent_llm": "anthropic/claude-haiku-4-5-20251001",
+  "user_llm": "anthropic/claude-haiku-4-5-20251001",
+  "env_interface_llm": "anthropic/claude-haiku-4-5-20251001",
+  "cap_usd": 10.0,
+  "upstream_patch": "in-process tau2.config override",
+  "run_id": "smoke_tau2_20260705_105714",
+  "git_commit": "b05fd33",
+  "started_at": "2026-07-05T10:57:14",
+  "argv": [
+    "REPLAY/script/smoke_tau2.py"
+  ]
+}

@@ -7,7 +7,7 @@
 | ID | 目的 | 配置要点 | 预算 | 状态 | run_id |
 |---|---|---|---|---|---|
 | E0.0 | 零 LLM 结构探测：任务加载/事后 verifier/persona 注入/env 构建 | 无 LLM 调用 | $0 | ✅ | tau2_probe_20260705_043549 |
-| E0.1 | τ²-bench 环境 + `shared/llm.py` 通路 + REPORT 自动生成全链路跑通 | retail 域 5 任务，agent=haiku 级，无经验库；注意 tau2 内部走 litellm，直接读 ANTHROPIC_API_KEY | ≤$5 | ⬜ | |
+| E0.1 | τ²-bench 环境 + `shared/llm.py` 通路 + REPORT 自动生成全链路跑通 | retail 域 5 任务，agent=haiku 级，无经验库；tau2 内部走 litellm 直接读 ANTHROPIC_API_KEY；**两处运行时 patch**（NL 判卷模型 gpt-4.1→haiku、宽容 JSON 解析），见 smoke_tau2.py 注释 | 实际 ~$0.96（含 2 轮诊断） | ✅ | smoke_tau2_20260705_110319 |
 | E0.2 | "历史日志"生成管线 + 日志 schema 定稿 | 弱 agent × 3 persona，retail 域 30 session | ≤$15 | ⬜ | |
 | E0.3 | 模块 A 提案质量人工检查 | E0.2 日志 → 失败聚类 → 候选条目，人工评 10 条 | ≤$10 | ⬜ | |
 | E0.4 | replay 探针 test-retest 稳定性 | 同一决策点重放 ×5，测判定一致率 | ≤$10 | ⬜ | |

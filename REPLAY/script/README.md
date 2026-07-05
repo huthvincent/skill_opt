@@ -11,5 +11,5 @@
 | 脚本 | 职责 | 状态 |
 |---|---|---|
 | `tau2_probe.py` | E0.0：零 LLM 结构探测（任务加载、事后 verifier、persona 注入点、env 构建） | ✅ 2026-07-05 通过 |
-| `smoke_tau2.py` | E0.1 冒烟：τ²-bench 单域跑通全链路 | ⬜ 待写（下一个） |
+| `smoke_tau2.py` | E0.1 冒烟：τ²-bench 单域跑通全链路。**含两个必要的运行时 patch**（不改上游）：① tau2 的 NL_ASSERTIONS 判卷硬编码 gpt-4.1 且无 CLI 开关 → in-process 覆盖模块常量为 Claude；② Claude 判卷回复带 markdown 栏 → 宽容 JSON 解析 shim。后续所有跑 tau2 的脚本都要复用这两个 patch（届时抽到 shared/） | ✅ 2026-07-05 通过（4/5 成功, $0.094/集） |
 | `gen_logs_tau2.py` | E0.2：弱 agent × persona 生成"历史日志"（persona 全部自注入——E0.0 发现原生任务 persona 为空） | ⬜ 待写 |

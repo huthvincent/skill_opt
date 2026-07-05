@@ -1,0 +1,9 @@
+[04:50:03] in-process argv: tau2 run --domain retail --task-set-name retail --num-tasks 5 --num-trials 1 --agent llm_agent --agent-llm anthropic/claude-haiku-4-5-20251001 --user user_simulator --user-llm anthropic/claude-haiku-4-5-20251001 --max-steps 30 --seed 42 --max-concurrency 2 --save-to smoke_tau2_20260705_045003
+[04:54:35] metric tau2_exit_code = 0
+[04:54:35] metric n_simulations = 5
+[04:54:35] metric terminations = ['user_stop', 'user_stop', 'infrastructure_error', 'infrastructure_error', 'infrastructure_error']
+[04:54:35] metric rewards = [1.0, 1.0, None, None, None]
+[04:54:35] metric success_rate = 2/5
+[04:54:35] metric cost_per_episode_usd = [0.0983, 0.0885, 0, 0, 0]
+[04:54:35] metric total_cost_usd = 0.1867
+[04:54:35] metric under_cap = True

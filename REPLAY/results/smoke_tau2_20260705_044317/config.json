@@ -1,0 +1,16 @@
+{
+  "experiment": "E0.1",
+  "domain": "retail",
+  "n_tasks": 5,
+  "max_steps": 30,
+  "seed": 42,
+  "agent_llm": "anthropic/claude-haiku-4-5-20251001",
+  "user_llm": "anthropic/claude-haiku-4-5-20251001",
+  "cap_usd": 10.0,
+  "run_id": "smoke_tau2_20260705_044317",
+  "git_commit": "b05fd33",
+  "started_at": "2026-07-05T04:43:17",
+  "argv": [
+    "REPLAY/script/smoke_tau2.py"
+  ]
+}

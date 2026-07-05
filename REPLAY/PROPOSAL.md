@@ -1,86 +1,78 @@
-# REPLAY —— 方法设计正典
+# REPLAY —— 方法设计正典（v1，2026-07-05 重设计）
 
 > **本文件是方法的唯一正典**：代码与本文件冲突时以本文件为准并修代码；方法变更必须先改这里（CONSTITUTION §5.4）。
 > 论文题目（工作版）：*REPLAY: Textual Experience Replay for Training-Free Skill Optimization from Real Interaction Logs*
-> 目标 venue：ICLR-27（约 2026-09-16）。文献坐标见 `../docs/lit_survey_20260705.md`。
+> 目标 venue：ICLR-27（约 2026-09-16）。文献坐标见 `../docs/lit_survey_20260705.md` 与 `../docs/pivot_due_diligence_raw.json`。
+> **v1 重设计背景**：Gate 1 实测（+Skill-RM 消融 −2.9 佐证）证明"批量生成条目整库注入"这一朴素姿势无效甚至有害；v1 把方法改造为**逐条贪心准入 + 定向小样本验证**，与 SkillOpt "最终 skill 仅含 1–4 条已验证编辑"的实证一致。motivation 不变：**有真实用户日志时，如何更好地优化 skill**。
 
 ## 0. 一段话摘要
 
-现有 training-free skill/经验库优化器（SkillOpt、Training-Free GRPO、ACE、GEPA）全部依赖当前策略新鲜合成的 on-policy rollout 和可验证 reward。但现实部署里最丰富的数据是**真实用户交互日志**：off-policy（由旧策略/别的 agent 产生）、只有噪声的隐式反馈和 AI-judge 近似、一次性不可重放。REPLAY 把 RL 的 experience replay 思想移植到文本空间：**日志负责提出**（高召回、便宜），**定向 on-policy rollout 负责裁决**（高精度、昂贵），中间由 replay 探针做分布偏移加权、由噪声校准的悲观门控防 judge-hacking、由条目级 counterfactual 归因决定改库里的哪一条。
+现有 training-free skill 优化器（SkillOpt、Training-Free GRPO、ACE、GEPA）全部依赖当前策略新鲜合成的 on-policy rollout 和可验证 reward，用不上部署中最丰富的数据——真实用户交互日志（off-policy、只有噪声隐式反馈、一次性不可重放）。REPLAY 把 RL 的 experience replay 思想移植到文本空间：**日志负责告诉我们"该在哪买能力"**（失败簇 = 高价值优化目标，免掉 on-policy 探索成本），**小预算定向 rollout 负责逐条裁决**（每条候选在其目标簇的匹配任务上做配对 A/B，置信下界过零 + 全局无害才准入）。核心洞察：日志不仅提供候选内容，更提供**验证经济学**——知道失败聚在哪，验证就能又便宜又高功效。
 
-## 1. 问题设定
+## 1. 问题设定（不变）
 
-- 冻结的 agent 策略 π(y|q, E)，E = 经验库（若干条 1-3 句的自然语言条目，注入 system prompt）。
-- 可用数据两种：
-  - **离线日志 D_log**：真实用户 × 旧 agent 的完整 session。无 ground-truth reward；只有 (a) AI judge 打分，(b) 隐式信号（用户改写、追问极性、任务放弃、最终采纳）。off-policy、不可重放、量大。
-  - **在线环境 env**：τ²-bench 式，可用 user simulator 做 on-policy rollout，有隐藏 verifier（**优化器不可见**，仅评估用）。rollout 昂贵，预算 B 有限。
-- 目标：在 rollout 预算 B 约束下最大化优化后 E 在真实分布上的任务成功率。
+- 冻结的 agent 策略 π(y|q, E)，E = 经验库（少量 1-3 句条目，注入 system prompt）。
+- 数据两种：**离线日志 D_log**（旧策略产生的真实 session；无 ground truth，只有 AI judge 分 + 隐式信号；量大便宜）+ **在线环境 env**（可 rollout，verifier 对优化器隐藏、仅评估用；rollout 贵，预算 B 有限）。
+- 目标：预算 B 内最大化优化后 E 的真实任务成功率。
 
-## 2. 方法：三个模块
+## 2. 方法 v1：逐条贪心准入管线（核心重设计）
 
-### 模块 A：离线提案（offline proposal）
-1. 对每条日志 session，用 judge + 隐式信号提取器估计结果分 r̂ 与失败描述；
-2. 失败 session 聚类成失败模式簇（embedding 聚类 + LLM 命名）；
-3. 每簇由 optimizer 模型对照当前 E 提出 ≤k 条**候选**经验条目（含"该条目声称能修复的失败模式"元数据）。
-**立场：日志产出的编辑永远只是假设，绝不直接入库。**
+> v0 的错误：模块 A 批量产出候选后整批注入验证。v1 原则：**任何时刻库里只存在"逐条通过定向验证门"的条目；一次只买一条能力。**
 
-### 模块 A'：replay 探针加权（off-policy 校正的文本类比）
-对支撑某候选条目的每条日志证据，把当前 agent（带当前 E）放回该日志的决策点重放一步：
-- 当前策略会做出与日志相同的动作 → 该失败对当前策略仍然成立，证据权重高；
-- 已经不会犯这个错 → 证据过时，降权/丢弃。
-簇的加权证据分决定其候选条目进入验证队列的优先级。这是"importance weighting"的文本类比，也是论文方法论上最独特的部件。**[待验证：探针一步重放的判定稳定性]**
+### 步骤 1：日志挖掘与簇排序（继承 v0 模块 A）
+judge + 隐式信号估计 session 结果 → 失败聚类 → 簇按 **频率 × 可修复性(judge 判断) × replay 探针有效性**排序。replay 探针（继承 v0 模块 A'）：当前 agent 在日志决策点重放一步，仍会犯错 → 簇有效；已不犯 → 过时降权。
 
-### 模块 B：定向在线验证 + 悲观门控（on-policy adjudication）
-1. 每条候选条目，在与其失败簇匹配的环境任务上跑**成对对照组**：G 组 {带候选 E∪{e} vs 不带 E}，同 seed/同任务——组的构造是 counterfactual A/B，不是 TF-GRPO 的同题重采样（这正是它无法消费一次性日志的原因，我们绕开了）；
-2. 接受判据（**悲观门控**，替换 SkillOpt 在噪声下会失效的严格-提升门）：多 judge 集成（含 prompt 扰动）打分的**置信下界**提升 > 0 才接受；
-3. 双信号一致性约束：接受还要求该条目不降低"日志隐式信号 replay 代理分"（防优化出只讨好 judge 的条目）；
-4. 验证预算分配：候选按 (证据权重 × 日志信号与 judge 信号的分歧度) 排序——分歧越大越值得花 rollout 查清（RLTHF 的"买标签"思想移植为"买 rollout"）。
+### 步骤 2：单簇候选提案（一次只处理 top-1 簇）
+optimizer 针对该簇写 **k=3 个候选条目变体**（同一失败模式的不同表述/粒度），各附"触发签名"（该条目适用的情境描述）。禁止任务专属实体（订单号/人名）。
 
-### 模块 C：条目级 counterfactual 归因（entry-level credit）
-- agent 被要求在轨迹中引用用到的条目 ID（激活日志）；
-- 长期维护每条目的统计：激活率、带/不带 win-rate（来自模块 B 的对照数据，免费副产品）、共激活对；
-- 周期性生命周期操作：低 win-rate 条目退役、高共激活对合并、过宽条目分裂——每次操作同样过模块 B 门控。
+### 步骤 3：定向微验证（v1 的心脏——验证经济学）
+对每个候选变体做**配对 A/B**（带 vs 不带该单条，同 seed）：
+- **定向集**：该簇匹配的环境任务 8–12 个 × 2 trial——基线在这些任务上失败率高（50%+），有效条目的效应量大（+30~50pp），**小 n 也有统计功效**（这是对"n=60 噪声带 ±10pp"实测教训的直接回应：不在全集上测小效应，在靶点上测大效应）；
+- **无害对照**：随机 5 个基线已通过的任务，要求不掉分；
+- **准入门（噪声校准的悲观门，继承 v0 模块 B 并收紧）**：接受当且仅当 定向集 Δ 的置信下界 > 0 **且** 对照集 Δ ≥ −ε。评估信号在真实部署形态下来自多 judge 集成 + 隐式信号锚（防 judge-hacking）；实验中可先用隐藏 verifier 建立上界，再换 judge 量化退化。
+- 每条验证成本 ≈ 26–34 集 ≈ $2.5–3.5（haiku）。三变体取最优，其余进 rejected buffer（SkillOpt 技巧，回喂 optimizer 当负例）。
 
-## 3. 实验协议
+### 步骤 4：条件注入（针对"整库倾倒伤性能"的第二重保险）
+准入条目绑定其触发签名，推理时只在对话前缀与签名匹配时注入（轻量 embedding 相似度，不引入学习型 router——路由文献已重度拥挤，本文的新颖性不押在这）。全局注入 vs 条件注入做成消融。
 
-### 3.1 主线：τ²-bench（可测量的"伪真实日志"协议）
-关键设计：**用弱旧 agent（不同模型、无经验库、不同 prompt）× 多 persona simulator 批量生成"历史日志"，并对优化器隐藏 verifier 结果**——优化器只能看 judge 分和隐式信号，但评估侧有隐藏 ground truth，可以精确度量每个模块贡献与 judge-hacking 程度。
-- 环境：τ²-bench retail / airline / telecom；指标 pass^k。
-- **核心对比表（同等 rollout 预算 B）**：
-  | 方法 | 数据源 |
-  |---|---|
-  | 无经验库 baseline | — |
-  | TF-GRPO（judge 当 reward） | 纯 on-policy |
-  | ExpeL / AutoGuide 式离线蒸馏 | 纯日志 |
-  | ACE | 纯 on-policy |
-  | SkillOpt 改造版（经验库化） | 纯 on-policy |
-  | **REPLAY** | 日志 + 定向 rollout |
-- 预期主结论：同预算下 REPLAY 显著更优；预算-性能曲线上 REPLAY 用 1/3~1/2 预算达到纯 on-policy 方法的满预算性能。
-- Ablation：去掉 replay 探针加权 / 悲观门控→严格门 / 分歧路由→随机路由 / 隐式信号锚 / 模块 C。
-- 诊断实验（模块 B 的招牌图）：judge-only 优化时"judge 分涨幅 vs 隐藏 verifier 真实涨幅"的背离曲线，REPLAY 的双信号锚定应显著收窄背离。
+### 步骤 5：预算衰减与库生命周期（继承 v0 模块 C）
+处理下一簇，编辑预算 cosine 衰减（对齐 SkillOpt 文本学习率）；库容硬帽 ≤5 条。每条目维护后续验证中的累计 win-rate，跌破阈值退役。终止条件：边际验证增益 < 阈值或预算耗尽。
 
-### 3.2 副线：WildChat 真实日志
-- 选 2-3 个高频域（如代码求助、写作润色），从 WildChat 挖失败簇 → 产出经验库 → held-out 真实日志上重放式评估（judge + 双盲 pairwise）。作用是真实性证据，不承担主结论。
+### 与 SkillOpt 的逐点差异（论文对比表的骨架）
 
-### 3.3 预算与模型
-- agent = claude-sonnet 级；optimizer = 最强档；judge = haiku 级多实例集成（便宜+异质）。全部经 `shared/llm.py`，每 run 带 `--max-cost-usd`。
-- 阶段计划：冒烟（τ²-bench 单域 5 任务跑通全 pipeline，≤$50）→ 预算估算文档 → 主实验。
+| 维度 | SkillOpt | REPLAY v1 |
+|---|---|---|
+| 失败发现 | on-policy rollout 批（40 任务×4 epoch，昂贵探索） | **离线日志免费给出**失败簇（off-policy + replay 探针校正） |
+| 验证方式 | 全局 held-out selection split（对稀有失败模式功效低） | **簇匹配定向集**（大效应量小样本）+ 无害对照 |
+| 准入判据 | 严格提升（噪声下失效） | **置信下界 + 双信号锚**（judge 噪声下仍稳） |
+| 注入方式 | 单一全局 skill 文档 | 条目级 + 触发签名条件注入 |
+| reward | 仅 ground-truth verifier | judge + 隐式信号（verifier 仅评估） |
 
-## 4. 贡献清单（论文 claim 草稿）
+## 3. 实验协议（v1 修订）
 
-1. **新设定**：首个从真实（off-policy、噪声隐式反馈）交互日志优化文本经验库的框架，附可测量的"隐藏 verifier"实验协议；
-2. **新方法**：replay 探针分布偏移加权 + 分歧路由的验证预算分配 + 噪声校准悲观门控 + 条目级 counterfactual 归因；
-3. **新发现**：量化 judge-only skill 优化的 reward-hacking，并证明真实日志隐式信号锚定能收窄它。
+主线不变：τ²-bench + 弱 agent×persona 造"伪真实日志"（隐藏 verifier 协议）；副线 WildChat。
+- **前置 sanity check 改为 v2 版**（见 `../docs/sanity_check.md`）：G0 可控性 → G1 单条目全管线 → G2 信号质量 → G3 同预算对垒纯 on-policy。
+- 核心表格改为**验证经济学曲线**：同预算 B 下，(a) 纯 on-policy 探索+验证（SkillOpt/TF-GRPO 式）、(b) 日志提出+全局验证、(c) 日志提出+定向验证（完整 REPLAY）三条曲线——预期 (c) 用最少 rollout 达到最高准入条目质量。
+- 消融：去定向（全局验证）/去 replay 探针/去悲观门（改严格门）/去条件注入/去隐式信号。
+- 招牌诊断图不变：judge-only 优化的"judge 分 vs 真实分背离"，REPLAY 双信号锚收窄之。
 
-## 5. 已知风险与对策
+## 4. 贡献清单（v1）
+
+1. **新设定**：首个从真实（off-policy、噪声隐式反馈）交互日志优化经验库的框架 + 可测量的隐藏 verifier 协议；
+2. **新方法——验证经济学**：日志失败簇驱动的**定向微验证**（小样本大效应）+ 噪声校准悲观准入 + replay 探针 off-policy 校正 + 触发签名条件注入；
+3. **新发现**：(a) 实测批量注入的危害及其机理（供社区避坑），(b) judge-only 优化的 hacking 量化与双信号锚的缓解。
+
+## 5. 风险与对策（v1 更新）
 
 | 风险 | 对策 |
 |---|---|
-| 混合优于单源的增益不够大 | 兜底叙事：预算受限下的样本效率优势（曲线图）；极端预算 sweep 找增益最大区间 |
-| replay 探针判定不稳定 | 冒烟阶段先单独测探针的 test-retest 一致性；不稳则降级为轨迹相似度加权 |
-| τ²-bench 上 baseline 复现成本 | TF-GRPO/ExpeL 逻辑简单可自实现；ACE 用官方代码；SkillOpt 无代码则按论文自实现并注明 |
-| Skills-Coach 等并发工作逼近 | 差异化死守"真实日志"设定；投稿前重扫 arXiv |
+| **agent 能力天花板**：haiku 可能连"完美针对性指令"都执行不了（Gate 1 失败的备择解释之一，尚未排除） | **G0 可控性预门**（~$2）：给 3 个已知失败任务各写一条"金条目"（允许作弊到底），看能否翻案 ≥2/3。不过 → 换 sonnet 当 agent 或简化条目格式，再不行才质疑路线 |
+| 批量注入伤性能的机理未明 | 三个假设已内置对策：prompt 稀释→库容帽+条件注入；过度谨慎撞 max-steps→无害对照门；无关规则误触发→触发签名 |
+| 定向集小样本的多重比较（3 变体×多簇） | 变体间用同一定向集配对比较；准入用 LCB 而非点估计；全局最终评估一次性做 |
+| 没有任何条目能通过验证门 | 这本身就是重要负结果 + 说明该 agent/域组合无提升空间——G0/G1 用 ~$7 提前探明，损失可控 |
+| Skills-Coach 等并发工作 | 差异化死守"日志"设定 + 验证经济学；投稿前重扫 arXiv |
 
 ## 变更记录
 
-- 2026-07-05：v0 初稿（来自 ideation 会话的 idea A+B+C 合并方案）。
+- **2026-07-05 v1**：方法重设计——废除批量提案-整库注入，改为逐条贪心准入 + 簇匹配定向微验证 + 触发签名条件注入 + G0 可控性预门。动因：Gate 1 实测（3 次尝试，批量注入未见收益且疑似有害）+ SkillOpt"1–4 条已验证编辑"实证 + Skill-RM 裸堆知识 −2.9 消融。motivation 与问题设定不变。
+- 2026-07-05 v0：初稿（ideation 会话的 idea A+B+C 合并方案）。

@@ -4,10 +4,10 @@
 
 | 文件 | 内容 |
 |---|---|
-| `pivot_proposal_20260705.md` | **转向提案（待 owner 决定）**：从"优化 agent 经验库"转向"持续优化复合评估 skill"；含地形图（谁占了什么）、四要素空档论证、新 $12 sanity check、三个选项 |
-| `pivot_due_diligence_raw.json` | 转向尽职调查的原始输出（Eval-Skill 深读 + 裁判优化/路由两个地形扫描） |
-| `method.md` | 通俗版方法讲解 + 和现有方法逐一对比（面向非代码读者）。**注意：描述的是转向前的旧方案，owner 拍板后需更新** |
-| `sanity_check.md` | **$100 以内的 go/no-go 验证计划**：4 道"便宜证伪"的门，决定该不该投入 ~$2000 主实验。owner 批准后按门顺序执行 |
+| `sanity_check.md` | **v2 验证计划（当前有效）**：G0 可控性→G1 单条目闭环→G2 信号→G3 对垒纯on-policy；前三门仅 ~$11。待充值后执行 |
+| `pivot_proposal_20260705.md` | 转向提案（**已被 owner 否决**，2026-07-05）：owner 明确 motivation 不变（日志→优化 skill），要求重设计方法而非换问题。调研结论仍有价值（评估侧地形图 + 新引用） |
+| `pivot_due_diligence_raw.json` | 上述尽职调查的原始输出（Eval-Skill 深读 + 裁判优化/路由两个地形扫描） |
+| `method.md` | 通俗版方法讲解 + 对比（面向非代码读者）。核心故事不变；**注入/验证部分需按 PROPOSAL v1 重设计更新**（待办） |
 | `lit_survey_20260705.md` | 文献调研精华：三篇 anchor 论文的方法/限制、方法侧+数据侧 landscape、确认的 6+10 条空白、投稿时间线。**写 related work 先读这个** |
 | `lit_survey_20260705_raw.json` | 调研的原始结构化输出（6 个 research agent 的完整结果），上面精华版的数据来源 |
 | `decisions_20260705.md` | 12 项架构决策的完整记录（选项、答案、理由）——"为什么当初这么定"来这里查 |

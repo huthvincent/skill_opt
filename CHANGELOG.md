@@ -1,5 +1,8 @@
 # CHANGELOG（倒序，每次改动一行；格式见 CONSTITUTION §5）
 
+- 2026-07-05 | docs | 新增 method.md（通俗方法讲解+对比）与 sanity_check.md（$100 内 4 门 go/no-go 验证计划）
+- 2026-07-05 | 项目 | git 历史重写：3 个 commit 作者统一为 huthvincent <huthruiz@gmail.com>，修复乱码 commit message，force push（owner 授权的一次性操作）
+
 - 2026-07-05 | REPLAY | E0.1 通过（smoke_tau2_20260705_110319，4/5 成功，$0.094/集，系列累计 ~$0.96/$10 上限）；两处运行时 patch 化解 tau2 的 gpt-4.1 硬编码（NL 判卷模型 + JSON 解析）；Doc/budget_estimate.md v0 初稿（全论文混合方案 ~$2,000）
 - 2026-07-05 | 项目 | GitHub 私有远程接通并首推（git@github.com:huthvincent/skill_opt.git, main 分支）
 

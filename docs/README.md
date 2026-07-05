@@ -7,7 +7,7 @@
 | `sanity_check.md` | **v2 验证计划（当前有效）**：G0 可控性→G1 单条目闭环→G2 信号→G3 对垒纯on-policy；前三门仅 ~$11。待充值后执行 |
 | `pivot_proposal_20260705.md` | 转向提案（**已被 owner 否决**，2026-07-05）：owner 明确 motivation 不变（日志→优化 skill），要求重设计方法而非换问题。调研结论仍有价值（评估侧地形图 + 新引用） |
 | `pivot_due_diligence_raw.json` | 上述尽职调查的原始输出（Eval-Skill 深读 + 裁判优化/路由两个地形扫描） |
-| `method.md` | 通俗版方法讲解 + 对比（面向非代码读者）。核心故事不变；**注入/验证部分需按 PROPOSAL v1 重设计更新**（待办） |
+| `method.md` | **通俗版方法完全讲解（v2，与 PROPOSAL v1 同步）**：九层由浅入深——skill 是什么→别人的盲区→日志 motivation→第一版失败教训→医生开药六步→为什么这次能 work→对比表→sanity check 四门→论文卖点 |
 | `lit_survey_20260705.md` | 文献调研精华：三篇 anchor 论文的方法/限制、方法侧+数据侧 landscape、确认的 6+10 条空白、投稿时间线。**写 related work 先读这个** |
 | `lit_survey_20260705_raw.json` | 调研的原始结构化输出（6 个 research agent 的完整结果），上面精华版的数据来源 |
 | `decisions_20260705.md` | 12 项架构决策的完整记录（选项、答案、理由）——"为什么当初这么定"来这里查 |

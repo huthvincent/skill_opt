@@ -1,0 +1,33 @@
+# 凭证
+.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# 数据（可再生/可重下，见 data/README.md）
+data/raw/*
+data/generated_logs/*
+!data/raw/.gitkeep
+!data/generated_logs/.gitkeep
+
+# 实验中间产物
+**/results/**/cache/
+
+# latex 编译产物
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+**/latex/main.pdf
+
+# 杂项
+.DS_Store
+*.swp

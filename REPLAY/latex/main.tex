@@ -1,0 +1,50 @@
+% REPLAY - generic arXiv preprint style (decision #6: switch to venue template at camera-ready time).
+% Build: latexmk -pdf main.tex   (TeX Live is installed on the dev server)
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% Greek/superscript chars appear in fetched bib titles (tau-bench family)
+\DeclareUnicodeCharacter{03C4}{\ensuremath{\tau}}
+\DeclareUnicodeCharacter{00B2}{\ensuremath{^2}}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xcolor}
+
+% Draft-note macro: every unresolved claim must be wrapped in \todo{} (CONSTITUTION section 8).
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{REPLAY: Textual Experience Replay for Training-Free\\Skill Optimization from Real Interaction Logs}
+\author{
+  Anonymous Authors\\
+  \todo{author list}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{Abstract. One-paragraph version lives in \texttt{../PROPOSAL.md} section 0; translate once the smoke experiments confirm the framing.}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\section{Reproducibility}
+\todo{budgets, model versions, prompts, log schema.}
+
+\end{document}

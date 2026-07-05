@@ -1,0 +1,337 @@
+{
+  "summary": "Verify collision risks and map terrain for pivoting REPLAY toward evaluation-skill optimization / skill routing",
+  "agentCount": 3,
+  "logs": [],
+  "result": {
+    "beyondRubrics": {
+      "found": true,
+      "title": "Beyond Rubrics: Exploration-Guided Evaluation Skills for Reward Modeling (a.k.a. \"Eval-Skill\")",
+      "arxiv_id_or_url": "arXiv:2606.07040 — https://arxiv.org/abs/2606.07040 (code: https://github.com/xing-stellus-yue/Eval-Skill)",
+      "date_venue": "Submitted 5 June 2026 (v1); revised 11 June 2026 (v2). arXiv preprint, cs.CL (Computation and Language); not yet a named venue. Authors: Xing Yue, Linjuan Wu, Daoxin Zhang, Yongliang Shen, Weiming Lu (Zhejiang University + Xiaohongshu Inc.). Note: arXiv HTML full text was not yet rendered (404) at fetch time on 2026-07-05; findings are from the abstract, arXiv listing, and search-index snippets of the body.",
+      "method_summary": "Eval-Skill targets open-ended (non-verifiable) reward modeling, where an LLM judge must follow subtle, domain-specific preferences. Instead of generating a rubric online per query (the prevailing approach, which adds inference cost and produces rigid/misaligned criteria), it synthesizes ONE reusable, domain-level \"evaluation skill\" per domain and injects it directly into the judge's context — reframing reward guidance as \"context evolution\" rather than parameter training or per-query rubric generation. The skill is built in two progressive stages: (1) workflow generation, then (2) principle generation, with an exploration-and-selection procedure interleaved across both stages over a small \"evolving set\" of cases. Concretely, the judge model first produces rollouts on a small evolving set; these rollouts are split into batches, and a strong generator model extracts batch-level \"local\" skills independently, conditioned on the query, the candidate responses, the rollout, the GROUND-TRUTH label, and an LLM-generated answer explanation for each case. Exploration proposes candidate skill components and selection keeps the ones that improve judging on the labeled cases, yielding a compact global skill. Only ~100 labeled cases per domain are needed. At inference the frozen judge just reads the pre-synthesized skill — no fine-tuning, no per-query rubric call. Reported analyses cover evolution-time scaling, generalizability, and transferability of the compact skills.",
+      "what_is_optimized": "The artifact optimized is the domain-level \"evaluation skill\" — a text object composed of a WORKFLOW (how the judge should proceed) plus PRINCIPLES (evaluation criteria/checklist), which is injected verbatim into the judge's context. This is essentially the judge's rubric/checklist/procedure (very close to thesis A's \"judge SKILL.md: rubrics, checklists, verifier-invocation/calibration rules\"). The optimization SIGNAL is supervised accuracy on curated GROUND-TRUTH preference labels (~100 labeled cases per domain): exploration proposes skill fragments and selection keeps those that raise agreement with the gold labels on the evolving/validation set. No model weights are updated (purely in-context). It optimizes skill CONTENT, not routing/when-to-load (so it is orthogonal to candidate thesis B).",
+      "uses_logs_or_implicit_feedback": "No. It does NOT use real interaction logs, deployment traces, or implicit/noisy feedback. The supervisory signal is dense, curated GROUND-TRUTH preference labels on a small hand-set of ~100 cases per domain (RewardBench-style labeled pairs). The only \"on-policy\" ingredient is the judge model's own rollouts on that small evolving set, used as material for skill extraction — not as a feedback source. So thesis A's distinguishing ingredient (learning from real off-policy interaction logs with sparse/implicit feedback) is NOT present.",
+      "is_automated_or_manual": "Construction is fully AUTOMATED by LLMs (judge model generates rollouts; a strong model generates/merges skills; exploration-selection is automatic). BUT it is a ONE-SHOT OFFLINE synthesis performed once per domain — NOT continual, NOT online, NOT self-improving over time from streaming data. There is an internal iterative exploration-selection loop during the offline build (over the fixed 100-case evolving set), but no ongoing update loop that refines the skill from new post-deployment data. This is the key gap: it fills Skill-RM's \"automation of artifact construction\" but explicitly leaves the \"continual self-improving updates\" half open.",
+      "benchmarks_results": "Evaluated on multiple reward-modeling benchmarks and best-of-N inference. Headline: on RewardBench 2, gains over vanilla judging of +13.44% (Qwen3-8B) and +18.51% (DeepSeek-V4-Flash); consistent improvements across diverse judge backbones. Additional analyses: evolution-time scaling, generalizability, transferability. Training-free / in-context (no fine-tuning). Stated non-scope: pointwise RM not covered (only pairwise + listwise).",
+      "limitations_gaps": "STATED limitations: (a) does not cover pointwise RM (only pairwise/listwise); (b) effectiveness for downstream RL post-training is unverified (only shown on RM benchmarks + best-of-N); (c) mixed-domain settings and harder tasks remain difficult, especially for smaller backbones.\n\nMY READ — what Eval-Skill does NOT do, i.e. the whitespace left for thesis A: (1) NOT continual/online — one-shot offline synthesis per domain, no ongoing refinement from new data (directly leaves Skill-RM's \"continual self-improving updates\" open); (2) supervision is DENSE curated ground-truth preference labels, NOT real interaction logs or sparse/implicit feedback — no off-policy/noisy-log ingestion; (3) validity is measured as label-agreement on RewardBench-style held-out labels, NOT against HIDDEN VERIFIERS / oracle checkers; (4) no explicit calibration or verifier-invocation-rule component in the skill (workflow+principles only); (5) per-domain, assumes clean domain partition — no routing/triggering of which skill loads when (thesis B untouched).\n\nOTHER 2026 papers I encountered that AUTOMATICALLY optimize evaluation skills/rubrics (rank-ordered by collision relevance to thesis A):\n- Skill-RM (arXiv:2606.03980) — the anchor; skill-structured judge orchestration; states the open problem A targets.\n- \"Learnable Assessment Skills for LLM-based Automated Scoring: Rubric Construction via Iterative Optimization\" (arXiv:2605.29274, May 28 2026) — HIGH relevance: automated, ITERATIVE rubric/\"assessment skill\" construction via error-diagnosis + validation-gated selection; decomposes skill into fixed scaffolding + learnable rules; supervised by ground-truth scores (ASAP-SAS); no expert rubric. Closest to the \"iterative optimization of an evaluation skill\" idea, but still offline/label-supervised, single-dataset, automated-scoring (education) not reward modeling.\n- \"Build, Judge, Optimize: A Blueprint for Continuous Improvement of Multi-Agent Consumer Assistants\" (arXiv:2603.03565) — HIGH relevance to the \"continual\" angle: LLM-judge grades full interaction TRACES against rubrics and uses GEPA prompt optimization to refine the judge's decision boundaries, raising human agreement 84.1%→91.4%. Uses traces + human labels; closest to continual judge optimization, but optimizes a judge prompt (not a structured skill library) and relies on human agreement, not hidden verifiers.\n- \"Generating and Refining Dynamic Evaluation Rubrics for LLM-as-a-Judge\" (arXiv:2605.30568) — dynamic rubric generation + refinement for judges.\n- \"Autorubric: Unifying Rubric-based LLM Evaluation\" (arXiv:2603.00077) — automated rubric-improvement feedback loop (grade→feedback→revise); single revision beats expert rubric.\n- \"SkillAxe: Sharpening LLM-Authored Agent Skills Through Evaluation-Guided Self-Refinement\" (arXiv:2606.10546) — evaluation-guided self-refinement of agent skills (not specifically the judge skill, but same mechanism family).\n- \"Agent Skill Evaluation and Evolution: Frameworks and Benchmarks\" (arXiv:2606.11435) — skill evolution frameworks/benchmarks.\n- \"EvoLM: Self-Evolving Language Models through Co-Evolved Discriminative Rubrics\" (arXiv:2605.03871) — co-evolving rubric-based reward with policy (RL, not training-free).\n- \"OpenRubrics: Towards Scalable Synthetic Rubric Generation for Reward Modeling and LLM Alignment\" (arXiv:2510.07743) — scalable synthetic rubric generation.\n- Lower relevance: iRULER (2602.12779), RIFT rubric-failure taxonomy (2604.01375), SkillFoundry self-evolving skill libraries (2604.03964), \"From Holistic Evaluation to Structured Criteria\" survey (2606.08625).\n\nImplication for thesis A: the \"AUTOMATE evaluation-skill construction, training-free, in-context\" novelty is now crowded (Eval-Skill + Learnable Assessment Skills + Autorubric). Thesis A must foreground the THREE axes none of these combine: (i) CONTINUAL/online updating over time, (ii) from real NOISY interaction logs + SPARSE/implicit feedback (not curated dense labels), and (iii) judge-validity measured against HIDDEN VERIFIERS. Build-Judge-Optimize is the closest on (i)+(logs), so differentiation must hinge on (ii) sparse/implicit signal + (iii) hidden-verifier validity + the structured skill-library (not prompt) artifact.",
+      "collision_verdict": "MEDIUM. Eval-Skill overlaps strongly with thesis A on the CORE artifact and mechanism: it automatically synthesizes a reusable, structured evaluation skill (workflow + principles = rubric/checklist/procedure) for a reward-model judge, training-free and injected in-context — i.e., it already occupies the \"automate construction of the judge's evaluation skill, training-free\" space and explicitly names filling the per-query-rubric gap. That directly claims the first half of thesis A's pitch (Skill-RM's \"automation of artifact construction\"). HOWEVER it does NOT preempt the full thesis on the three defining axes: (1) it is ONE-SHOT OFFLINE, not CONTINUAL/self-improving; (2) it learns from ~100 CURATED GROUND-TRUTH preference labels, not real interaction logs + sparse/implicit feedback; (3) validity is label-agreement on RewardBench, not measured against HIDDEN VERIFIERS. So it is a serious adjacent prior-art anchor that erodes the \"automation\" novelty but leaves clear whitespace for continual + log-driven + hidden-verifier-validated optimization. Net risk MEDIUM (leaning MEDIUM-HIGH if reviewers read thesis A primarily as \"auto-build the judge skill\"); to stay safe, thesis A must be framed and evaluated as continual, log/sparse-feedback-driven, and hidden-verifier-validated, and cite Eval-Skill (plus Learnable Assessment Skills 2605.29274 and Build-Judge-Optimize 2603.03565) as the offline/label-supervised baselines it advances beyond."
+    },
+    "judgeSweep": {
+      "papers": [
+        {
+          "id": "arXiv:2606.03980",
+          "title": "Skill-RM: Unifying Heterogeneous Evaluation Criteria via Agent Skill",
+          "one_liner": "Reformulates reward/judging as executing a reusable 'Reward-Evaluation Skill' that orchestrates a bank of heterogeneous resources (verifiers, references, checklists, rubrics) via an agentic judge + deterministic readout.",
+          "relation": "ANCHOR / closest framing. This is the paper the pivot is built on. It introduces the evaluation-SKILL artifact (invocation protocol + resource bank) and shows skill-structured orchestration helps (+2.3) while naive resource-appending hurts (-2.9). Crucially it explicitly names thesis-A's target as an OPEN problem: 'automation of artifact construction and mechanisms for continual, self-improving updates remain open problems.' Thesis A = fill exactly this gap.",
+          "artifact_and_signal": "Artifact: a hand-authored evaluation skill (SKILL.md-like invocation protocol + resource bank). Signal: none for the skill itself — the skill is static/human-built; only the per-input evidence retrieval is dynamic. No learning of the skill artifact."
+        },
+        {
+          "id": "arXiv:2605.28882",
+          "title": "GrowLoop: Self-Evolving Conversation Evaluation Seeded by Human",
+          "one_liner": "Training-free, continually self-evolving textual evaluation rubric for conversation quality, bootstrapped from a small human seed and refined as new dialogue data arrives.",
+          "relation": "STRONGEST DIRECT OCCUPANT of thesis A's generic form. Training-free + continual + textual eval artifact + seeded by sparse human labels + uses implicit signals (annotator disagreement / interaction patterns). This is nearly the exact mechanism thesis A proposes, minus the agentic/verifier-invocation and calibration components. Domain = conversation eval, not agentic tool-use tasks.",
+          "artifact_and_signal": "Artifact: structured textual evaluation rubric/criteria (no weight updates). Signal: human seed labels + implicit feedback from annotator disagreement/interaction patterns; refined continually on incoming conversations."
+        },
+        {
+          "id": "arXiv:2512.06751",
+          "title": "Becoming Experienced Judges: Selective Test-Time Learning for Evaluators (LWE / Selective-LWE)",
+          "one_liner": "An evaluator maintains an evolving meta-prompt that produces sample-specific eval instructions and refines itself at inference time; Selective-LWE only updates on self-inconsistent cases.",
+          "relation": "DIRECT OCCUPANT of the 'training-free continual textual judge artifact' slot. Confirms the core mechanism (a continually-updated textual evaluation prompt, no weights, no train/val set) already exists. Differs from thesis A: signal is self-consistency (no ground truth, no interaction logs) and the artifact is a single meta-prompt, not a composite skill with verifier/calibration rules.",
+          "artifact_and_signal": "Artifact: an evolving meta-prompt (textual), training-free. Signal: self-generated feedback / self-inconsistency detection; no external labels or logs."
+        },
+        {
+          "id": "arXiv:2605.30568",
+          "title": "Generating and Refining Dynamic Evaluation Rubrics for LLM-as-a-Judge",
+          "one_liner": "Generates dataset- and instance-specific rubrics training-free, then optionally refines a rubric-generator via meta-judge reward signals.",
+          "relation": "DIRECT OCCUPANT of 'automatic + refined textual eval rubric.' Training-free variant covers the no-train case; the refined variant fine-tunes a rubric generator (weight-based). Covers rubric generation/refinement but not verifier-invocation, calibration, or implicit-log-driven continual updates.",
+          "artifact_and_signal": "Artifact: evaluation rubrics (textual), two granularities. Signal: meta-judge reward signal for the refinement loop; training-free base needs no labels."
+        },
+        {
+          "id": "Databricks/MLflow blog, Feb 2026 (not on arXiv)",
+          "title": "MemAlign: Building Better LLM Judges From Human Feedback With Scalable Memory",
+          "one_liner": "Aligns an LLM judge via a dual (semantic + episodic) memory of natural-language feedback instead of retraining — a handful of NL comments yields an aligned judge at ~$0.03 vs $1-5 for prompt optimizers.",
+          "relation": "DIRECT OCCUPANT (industry) of 'training-free judge alignment from feedback via updated textual/memory artifact.' Strong evidence the training-free memory-based judge-improvement slot is already being productized. Differs from thesis A: signal is explicit human NL feedback (not implicit interaction logs), and the artifact is a retrieval memory, not a structured skill with verifier/calibration rules.",
+          "artifact_and_signal": "Artifact: dual-memory context (semantic principles + episodic examples), training-free. Signal: small amounts of explicit natural-language human feedback."
+        },
+        {
+          "id": "ACL 2025 Industry (2025.acl-industry.67)",
+          "title": "Enhancing LLM-as-a-Judge through Active-Sampling-based Prompt Optimization",
+          "one_liner": "Optimizes the judge prompt in label-scarce settings by actively selecting a small, diverse, informative subset to label, formulated as a convex uncertainty/diversity trade-off.",
+          "relation": "DIRECT OCCUPANT of 'training-free judge-prompt optimization from sparse labels.' Overlaps thesis A's 'sparse ground truth' angle. Differs: uses actively-solicited human labels (not implicit logs), optimizes only the judge prompt, and is one-shot optimization rather than continual online updating.",
+          "artifact_and_signal": "Artifact: judge prompt (textual), training-free. Signal: actively-sampled human labels on a small budget, starting from zero labels."
+        },
+        {
+          "id": "arXiv:2606.07040",
+          "title": "Beyond Rubrics: Exploration-Guided Evaluation Skills for Reward Modeling (Eval-Skill)",
+          "one_liner": "Synthesizes reusable, domain-level textual 'evaluation skills' (workflow + principles) via exploration over ~100 cases per domain, injected into the judge context instead of per-query rubrics or weight training.",
+          "relation": "ADJACENT / partial occupant of the 'evaluation SKILL as textual artifact' slot, in the Skill-RM lineage. Frames reward guidance as context evolution. Differs from thesis A: it is a one-time synthesis (not continual), uses exploration over a curated case set (not interaction logs + implicit feedback), and covers rubric/principle skills but not verifier-invocation or calibration rules.",
+          "artifact_and_signal": "Artifact: reusable domain-level textual evaluation skills (workflow + principles), context-injected. Signal: exploration-and-selection over ~100 cases/domain; no weight updates but not continual."
+        },
+        {
+          "id": "arXiv:2410.03608",
+          "title": "TICKing All the Boxes: Generated Checklists Improve LLM Evaluation and Generation (TICK / STICK)",
+          "one_liner": "The judge LLM auto-decomposes each instruction into a YES/NO checklist, improving human-judge agreement (46.4%->52.2%); STICK reuses checklists for self-refinement and Best-of-N.",
+          "relation": "OCCUPANT of the 'auto-generated evaluation checklist' sub-artifact. Establishes that LLM-generated checklists (one component of thesis A's SKILL.md) already improve judging. But checklists are generated per-instruction and static (not continually optimized from logs/ground truth), and there is no verifier-invocation/calibration learning.",
+          "artifact_and_signal": "Artifact: per-instruction textual YES/NO checklist, training-free. Signal: none learned — checklist is generated zero-shot from the instruction."
+        },
+        {
+          "id": "arXiv:2603.07019",
+          "title": "AutoChecklist: Composable Pipelines for Checklist Generation and Scoring with LLM-as-a-Judge",
+          "one_liner": "Modular, composable pipelines that generate and then score evaluation checklists with an LLM judge.",
+          "relation": "OCCUPANT/adjacent of the checklist-generation sub-artifact (2026). Extends TICK-style checklist construction into composable pipelines. Still generation-centric, not continual optimization of the artifact from feedback; no calibration/invocation learning.",
+          "artifact_and_signal": "Artifact: evaluation checklists (textual) + scoring pipeline. Signal: LLM-judge scoring; no continual label/log-driven update of the checklist artifact."
+        },
+        {
+          "id": "arXiv:2510.07743",
+          "title": "OpenRubrics: Towards Scalable Synthetic Rubric Generation for Reward Modeling and LLM Alignment",
+          "one_liner": "Large-scale synthetic (prompt, rubric) corpus + a trained rubric-generation/rubric-based reward model (Rubric-RM), +6.8% avg on benchmarks.",
+          "relation": "CONTRAST/adjacent: automates rubric construction (thesis A's rubric component) but via WEIGHT-TRAINED rubric-generation models on a synthetic corpus — not training-free, not continual, not log-driven. Shows the rubric-as-eval-artifact space is being industrialized on the trained side.",
+          "artifact_and_signal": "Artifact: rubrics + a trained rubric-generation reward model (weights). Signal: synthetic (prompt, rubric) pairs mined via preference-implied rubrics; offline training."
+        },
+        {
+          "id": "arXiv:2408.02666",
+          "title": "Self-Taught Evaluators",
+          "one_liner": "Iteratively trains an LLM-as-judge on purely synthetic contrasting outputs + self-generated reasoning traces, raising Llama3-70B judge from 75.4->88.3 on RewardBench with no human labels.",
+          "relation": "CONTRAST (weight-trained self-improvement of a judge). Same high-level goal (better judge without human annotations) but the artifact is model WEIGHTS via SFT, not a training-free textual skill. Establishes the dominant prior paradigm thesis A deliberately departs from.",
+          "artifact_and_signal": "Artifact: judge model weights (SFT). Signal: self-synthesized contrasting responses + self-generated judgments, iteratively bootstrapped."
+        },
+        {
+          "id": "arXiv:2501.18099",
+          "title": "Learning to Plan & Reason for Evaluation with Thinking-LLM-as-a-Judge (EvalPlanner)",
+          "one_liner": "DPO over self-generated evaluation plans + executions; SOTA generative RM on RewardBench (93.9) with fewer, synthetic preference pairs.",
+          "relation": "CONTRAST (weight-trained). Optimizes the judge's reasoning via DPO on synthetic plans — artifact is weights, not a training-free textual skill. Its 'evaluation plan' idea is conceptually adjacent to a learned checklist/rubric but is internalized into parameters, not a continually-edited SKILL.md.",
+          "artifact_and_signal": "Artifact: judge weights via preference optimization. Signal: synthetically constructed evaluation plans/executions selected by outcome, DPO."
+        },
+        {
+          "id": "arXiv:2401.10020",
+          "title": "Self-Rewarding Language Models",
+          "one_liner": "The model acts as its own LLM-as-judge to generate rewards during iterative DPO, improving both generation and judging together.",
+          "relation": "CONTRAST / foundational (weight-trained). The origin of the self-judge self-improvement line. Artifact is weights; judging capability is a byproduct. Motivates thesis A's move to a separable, inspectable textual evaluation artifact instead of entangled weights.",
+          "artifact_and_signal": "Artifact: policy+judge weights (iterative DPO). Signal: self-generated LLM-as-judge preference labels on own outputs."
+        },
+        {
+          "id": "arXiv:2407.19594",
+          "title": "Meta-Rewarding Language Models: Self-Improving Alignment with LLM-as-a-Meta-Judge",
+          "one_liner": "Adds a meta-judge step where the model judges its own judgments to keep improving judging quality (avoiding saturation), improving AlpacaEval/Arena-Hard.",
+          "relation": "CONTRAST but conceptually closest on the 'meta-judge' axis (weight-trained). It improves the JUDGE (not just the actor) using a meta-judge signal — the same target as thesis A — but via parameter updates and self-play, not a training-free textual artifact updated from real logs + sparse ground truth.",
+          "artifact_and_signal": "Artifact: judge/meta-judge weights (iterative DPO). Signal: model's self-evaluation of its own judgments (meta-judge preferences); no external logs."
+        },
+        {
+          "id": "arXiv:2410.16256 / 2310.17631",
+          "title": "CompassJudger-1 (and JudgeLM 2310.17631, Prometheus) — trained judge models",
+          "one_liner": "Families of fine-tuned all-in-one/rubric-following judge models; strong in-domain but shown (2403.02839) to drop catastrophically when applied to a different scheme than trained on.",
+          "relation": "CONTRAST (weight-trained judges) + supporting evidence for thesis A's motivation. Fine-tuned judges are brittle out-of-distribution/out-of-scheme, which argues for a training-free, inspectable, continually-editable textual evaluation artifact rather than baking the judge into weights.",
+          "artifact_and_signal": "Artifact: judge model weights (SFT on GPT-4/curated judgments + rubrics). Signal: offline supervised judgment data; static once trained."
+        },
+        {
+          "id": "arXiv:2410.10934",
+          "title": "Agent-as-a-Judge: Evaluate Agents with Agents",
+          "one_liner": "An agentic judge with tool use / intermediate feedback evaluates agentic systems step-by-step (DevAI benchmark of 55 dev tasks).",
+          "relation": "ADJACENT (agentic judging) but NOT an occupant of artifact optimization. It makes the judge agentic (can invoke tools/verifiers) — the substrate thesis A's 'verifier-invocation rules' would optimize — but the judge here is static; there is no continual learning of when/which verifier to invoke. Leaves thesis A's verifier-orchestration-as-learned-artifact slot open.",
+          "artifact_and_signal": "Artifact: an agentic judge workflow (fixed). Signal: none learned; judgments come from tool-augmented reasoning at eval time."
+        },
+        {
+          "id": "arXiv:2602.13576",
+          "title": "Rubrics as an Attack Surface: Stealthy Preference Drift in LLM Judges",
+          "one_liner": "Shows that seemingly benign, benchmark-passing edits to a judge's textual rubric induce systematic preference drift (RIPD) that propagates into downstream post-trained policies.",
+          "relation": "RISK / open-problem framing for thesis A. Any system that CONTINUALLY edits a textual evaluation artifact from noisy logs is directly exposed to this failure mode. No existing continual-updater incorporates drift-resistant gating — so 'gated, drift-robust continual updates validated beyond aggregate benchmarks' is a concrete, unoccupied contribution angle for thesis A.",
+          "artifact_and_signal": "Artifact studied: the judge's natural-language rubric as a manipulable control interface. Signal/finding: criterion-preserving edits pass benchmarks yet shift preferences up to 9.5-27.9% on target domains."
+        }
+      ],
+      "gaps": [
+        "COMPOSITE skill vs single sub-artifact: every occupant optimizes ONE textual component — a rubric (GrowLoop, Dynamic-Rubrics, OpenRubrics), a judge/meta-prompt (LWE, Active-Sampling APO), a checklist (TICK, AutoChecklist), or a memory (MemAlign). None jointly and continually optimizes the full evaluation SKILL.md thesis A defines: rubrics + checklists + VERIFIER-INVOCATION rules + CALIBRATION rules as one artifact. Skill-RM has all these components but hand-built and static.",
+        "VERIFIER-INVOCATION / tool-routing rules are unoccupied as a learned textual artifact. Agent-as-a-Judge makes judges tool-using but static; Skill-RM defines an invocation protocol but does not learn/continually update it. 'When to call which verifier/tool and how to weigh its evidence' as a training-free, continually-edited rule set is open.",
+        "CALIBRATION / abstention rules (score-to-verdict mapping, confidence thresholds, when-to-defer-to-human) are not treated as an optimizable textual artifact by any occupant. Calibration work (e.g. linear-probe judge calibration, 2512.22245) operates on model internals/probes, not editable text.",
+        "IMPLICIT feedback from real interaction logs is nobody's signal. Occupant signals are: self-consistency (LWE), explicit NL feedback (MemAlign), actively-solicited labels (Active-Sampling APO), human seed + annotator disagreement (GrowLoop), synthetic meta-judge reward (Dynamic-Rubrics, Meta-Rewarding). Thesis A's exact setup — noisy IMPLICIT signals mined from production agent logs + SPARSE ground truth — is unoccupied and preserves continuity with the original off-policy-logs thesis.",
+        "DRIFT-ROBUST GATING is unaddressed by any continual updater. 'Rubrics as an Attack Surface' (2602.13576) proves benign-looking rubric edits pass benchmarks yet drift preferences and propagate into policies; no self-improving-judge paper defends against this. A gated continual-update mechanism validated beyond aggregate benchmarks is a clean, defensible contribution.",
+        "AGENTIC TOOL-USE task-eval domain is open. GrowLoop = conversation eval; TICK = instruction-following; Skill-RM/Eval-Skill/OpenRubrics = reward-bench-style pairwise RM. Continual, training-free optimization of an evaluation skill for tau2-bench-style agentic tool-use verdicts (the pivot's own testbed) is not occupied.",
+        "TRAINING-FREE vs WEIGHT-TRAINED split: the strongest self-improving-judge results (Self-Taught Evaluators, EvalPlanner, Self-/Meta-Rewarding, OpenRubrics, Self-Improving VLM Judges) all bake improvement into WEIGHTS and are brittle out-of-scheme (2403.02839). The training-free textual-artifact side is thinner and newer (GrowLoop, LWE, MemAlign, Dynamic-Rubrics) — a real opening, but note it is filling fast (multiple 2605-2606 papers)."
+      ],
+      "occupancy_verdict": "Thesis A as GENERICALLY stated — 'training-free continual optimization of a TEXTUAL evaluation artifact (rubric/judge-prompt) from feedback + sparse ground truth' — is already substantially OCCUPIED, and the occupation is very recent and accelerating. GrowLoop (arXiv:2605.28882) is a near-exact match to the core mechanism: training-free, continual, textual conversation-eval rubric evolved from a human seed + implicit annotator-disagreement signals. LWE / 'Becoming Experienced Judges' (2512.06751) independently establishes training-free continual meta-prompt evolution for evaluators. MemAlign (Databricks/MLflow, Feb 2026) productizes training-free judge alignment via updated memory from NL feedback. Active-Sampling APO (ACL-2025) and Dynamic-Rubrics (2605.30568) cover training-free judge-prompt/rubric optimization from sparse labels. So the headline claim ('automate + continually self-improve a textual judge artifact, training-free') is NOT novel by itself.\\n\\nHowever, the ANCHOR (Skill-RM, 2606.03980) explicitly leaves 'automation of artifact construction and continual self-improving updates' of the evaluation SKILL open, and no occupant closes it at the SKILL level. The defensible, still-open sub-slots for thesis A are the union of: (1) optimizing the WHOLE evaluation skill — not just rubric text but verifier-invocation/tool-routing rules AND calibration/abstention rules — as one continually-edited artifact; (2) driving those updates from IMPLICIT feedback in real agent interaction logs + sparse ground truth (nobody's signal; also the cleanest bridge from the paper's original off-policy-logs thesis); (3) a DRIFT-ROBUST gating mechanism that resists the rubric-edit preference drift proven in 2602.13576 (no self-improving judge defends against this); and (4) the AGENTIC tool-use task-eval domain (e.g. tau2-bench), which no occupant targets. Recommendation: do NOT pitch thesis A as 'continually optimize a judge rubric training-free' (occupied by GrowLoop/LWE/MemAlign). Narrow it to the verifier-invocation + calibration/abstention layers of the evaluation skill, driven by implicit interaction-log signals, with drift-gated updates, evaluated on agentic tool-use tasks. Note that thesis B (learning WHEN to load which skill/entry — routing/triggering) is closely related to sub-slot (1)'s verifier-invocation-routing and is echoed by EEVEE (2606.11182, router+prompt co-evolution) and the skill-lifecycle 'invocation' stage in the SkillOpt/Audited-Skill-Graph line, so B is also partially contested and would need similar narrowing."
+    },
+    "routingSweep": {
+      "papers": [
+        {
+          "id": "2409.07429",
+          "title": "Agent Workflow Memory (AWM)",
+          "one_liner": "Induces reusable 'workflows' from past trajectories and SELECTIVELY provides only the relevant ones to guide the next action, offline or online.",
+          "artifact_and_signal": "Artifact = a library of induced natural-language workflows + a relevance-based selection/injection step. Signal = self-induced from the agent's own past (training or on-the-fly streaming) trajectories; no reward model, selection is similarity/relevance-based.",
+          "relation": "Canonical 'selective injection' predecessor to thesis B: it already optimizes WHICH memory entry is shown WHEN, but selection is heuristic (relevance), not learned from missed/false-activation signal."
+        },
+        {
+          "id": "2403.08978",
+          "title": "AutoGuide: Generation and Selection of State-Aware Guidelines",
+          "one_liner": "Extracts guidelines with an explicit conditional 'if in state X' structure so the right guideline is activated only in matching states.",
+          "artifact_and_signal": "Artifact = state-conditioned guidelines (each encodes its applicability condition) + a state-matching selector. Signal = offline experience, contrasting successful vs unsuccessful trajectories to mine the state->guideline conditions.",
+          "relation": "Directly a thesis-B ancestor for conditional activation: activation condition is authored INTO the artifact, but conditions are mined once offline, not continually re-tuned from deployment mis-fires."
+        },
+        {
+          "id": "2508.16153",
+          "title": "Memento: Fine-tuning LLM Agents without Fine-tuning LLMs",
+          "one_liner": "Formalizes the agent as a Memory-augmented MDP with a learned neural case-SELECTION policy that picks which past case to condition on.",
+          "artifact_and_signal": "Artifact = a case-selection policy over episodic memory (differentiable or non-parametric). Signal = online memory-based RL from task outcome rewards; the LLM stays frozen while only the selection policy adapts.",
+          "relation": "Strong occupant of thesis B: 'learned selection of which entry to load' is exactly the routing artifact, and it is trained on-policy from reward — overlapping the on-policy half of the original thesis."
+        },
+        {
+          "id": "2605.18401",
+          "title": "SkillsVote: Lifecycle Governance of Agent Skills (Collection, Recommendation, Evolution)",
+          "one_liner": "Before execution, does agentic library search to RECOMMEND which skill context to expose; after execution, attributes outcomes to admit only reusable skills.",
+          "artifact_and_signal": "Artifact = a structured skill library + pre-execution recommendation/search + post-execution admission filter. Signal = trajectory decomposition into skill-linked subtasks with outcome attribution (skill vs exploration vs environment vs result).",
+          "relation": "Occupies the 'recommend which skill when' slot end-to-end and adds governance; the WHEN-to-load decision is search/recommendation, still not learned from logged trigger errors."
+        },
+        {
+          "id": "2605.05726",
+          "title": "SkillRet: A Large-Scale Benchmark for Skill Retrieval in LLM Agents",
+          "one_liner": "Frames 'select the right skill for a user request' as a large-scale retrieval problem (17,810 skills) and shows finetuned retrievers beat off-the-shelf ones.",
+          "artifact_and_signal": "Artifact = a trained skill retriever (embedding model). Signal = query->skill relevance labels over a 6/18-category taxonomy; 63k train samples, NDCG@10 objective.",
+          "relation": "Turns thesis B's 'which skill' into a solved-ish IR/benchmark problem, but purely relevance retrieval — no notion of activation precision, false-fires, or the base LLM's own reasoning-based routing."
+        },
+        {
+          "id": "2606.03565",
+          "title": "Skill Is Not Document: Query-Conditional Benchmark and Two-Stage Retriever (R3)",
+          "one_liner": "Argues skills aren't documents; a two-stage embed+rerank router selects COMPATIBLE skill combinations, trained on LLM REJECTION decisions.",
+          "artifact_and_signal": "Artifact = two-stage skill router (embedder + cross-encoder reranker). Signal = LLM-generated rejection annotations (which skills should NOT be retrieved together), i.e., mining negative/'false-activation' signal — 41,592 accepted + 32,828 rejected queries.",
+          "relation": "Closest to the 'learn from false-activation logs' idea in thesis B — but it trains a separate retriever model from rejection labels, not the human-readable trigger/description that the agent LLM reasons over, and it's one-shot supervised, not continual."
+        },
+        {
+          "id": "2606.00510",
+          "title": "Skill or Skip? Selective Skill Invocation via Dual-Granularity Preference Learning",
+          "one_liner": "Learns WHETHER to invoke a skill at all (invoke vs skip) rather than always loading it.",
+          "artifact_and_signal": "Artifact = a selective skill-invocation (gating) policy. Signal = dual-granularity preference learning (preferences over invoke/skip decisions and their granularity).",
+          "relation": "Directly occupies the 'conditional activation' core of thesis B (should this skill fire?) via preference learning — the tightest competitor to a 'learn when to trigger' pitch."
+        },
+        {
+          "id": "2604.20572",
+          "title": "Ask Only When Needed: Proactive Retrieval from Memory and Skills (ProactAgent)",
+          "one_liner": "Models retrieval as an explicit policy ACTION and learns WHEN and WHAT to pull from memory/skills mid-interaction, not just at task start.",
+          "artifact_and_signal": "Artifact = a proactive retrieval-gating policy over typed repositories (factual/episodic/behavioral-skill). Signal = ProactRL paired-branch PROCESS rewards: compare continuations from the same prefix WITH vs WITHOUT retrieval (a counterfactual missed/false-retrieval signal), giving step-level supervision.",
+          "relation": "Very strong occupant: unifies memory AND skills, and its with/without-retrieval counterfactual is effectively the 'missed vs false activation' signal thesis B wanted — but derived from on-policy rollouts, not real off-policy logs."
+        },
+        {
+          "id": "2508.19828",
+          "title": "Memory-R1: Manage and Utilize Memories via Reinforcement Learning",
+          "one_liner": "RL-trains a Memory Manager (ADD/UPDATE/DELETE/NOOP) and an Answer Agent that pre-selects the relevant memory subset before reasoning.",
+          "artifact_and_signal": "Artifact = memory-operation policy + a retrieval-distillation/selection step (60 candidates -> relevant subset). Signal = outcome-driven RL (PPO/GRPO), minimal supervision, learned by trial and error toward final answer accuracy.",
+          "relation": "Occupies 'which memories get utilized when' via RL; overlaps thesis B on the selection axis but operates on memory records, not skill/guideline trigger metadata."
+        },
+        {
+          "id": "2502.12110",
+          "title": "A-MEM: Agentic Memory for LLM Agents",
+          "one_liner": "Zettelkasten-style memory that dynamically links and evolves notes so retrieval traverses an interconnected network rather than a flat store.",
+          "artifact_and_signal": "Artifact = an evolving memory-note graph (contextual descriptions, keywords, tags, links) + link-based retrieval. Signal = LLM-generated semantic links/attributes on write; retrieval is structural/semantic, no reward.",
+          "relation": "Occupies the memory-organization-for-retrieval slot adjacent to thesis B; changes WHAT is retrievable and how, but the activation decision itself is unlearned (semantic similarity over the graph)."
+        },
+        {
+          "id": "2310.08560",
+          "title": "MemGPT: Towards LLMs as Operating Systems",
+          "one_liner": "LLM self-manages a tiered memory hierarchy, paging content between the context window and external stores via function calls.",
+          "artifact_and_signal": "Artifact = an in-context, function-calling memory-management policy (page in/out). Signal = none learned — the routing is prompted/heuristic, driven by the base LLM's own function-call decisions.",
+          "relation": "Foundational memory-routing baseline for thesis B, but routing is entirely in-context and hand-designed; nothing is OPTIMIZED from logs, leaving open the 'learn the routing' contribution."
+        },
+        {
+          "id": "2310.11511",
+          "title": "Self-RAG: Learn to Retrieve, Generate, and Critique via Self-Reflection",
+          "one_liner": "Trains reflection tokens so the model decides ON-DEMAND whether to retrieve at all and whether passages are relevant.",
+          "artifact_and_signal": "Artifact = retrieve-or-not (and relevance/critique) gating via special reflection tokens baked into the LM. Signal = supervised on GPT-4-distilled reflection-token labels.",
+          "relation": "Contrast/precedent from RAG: the purest 'learn WHEN to load context' formulation, but it needs weight training of the base model and targets document passages, not modular skills the agent LLM reasons over in-context."
+        },
+        {
+          "id": "2403.14403",
+          "title": "Adaptive-RAG: Adapt Retrieval to Question Complexity",
+          "one_liner": "A small classifier routes each query to no-retrieval / single-step / multi-step retrieval based on predicted complexity.",
+          "artifact_and_signal": "Artifact = a query-complexity classifier/router. Signal = auto-collected labels from actual model outcomes plus dataset inductive biases (no human labels).",
+          "relation": "Contrast baseline for thesis B's routing framing (which strategy, how much context) — but routes retrieval depth, not skill/memory selection, and its auto-labels are outcome-derived rather than mined from activation errors."
+        },
+        {
+          "id": "2606.11680",
+          "title": "Organize then Retrieve: Hierarchical Memory Navigation for Efficient Agents",
+          "one_liner": "A lightweight RL agent NAVIGATES a structured memory hierarchy to select the minimal-yet-sufficient context under strict budget.",
+          "artifact_and_signal": "Artifact = a navigation/retrieval policy over directory/temporal/provenance structure. Signal = GRPO reward for retrieving minimal sufficient context (reliability under context constraints).",
+          "relation": "Occupies 'which slice of context loads when' with a learned, budget-aware policy; overlaps thesis B on selective loading but is memory-navigation, not skill-trigger optimization from mis-fire logs."
+        }
+      ],
+      "gaps": [
+        "NO paper optimizes the human-readable TRIGGER ARTIFACT itself (SKILL.md description / when-to-use / frontmatter metadata that the base LLM reasons over for progressive-disclosure activation). Every competitor learns a SEPARATE routing model — a retriever (SkillRet, R3), an RL selection/gating policy (Memento, Memory-R1, ProactAgent, Organize-then-Retrieve), a classifier (Adaptive-RAG), or in-model reflection tokens (Self-RAG). Optimizing the description/trigger text that Anthropic-style skill routing depends on is left entirely to practitioner blogs (agentskills.io, OpenAI/Anthropic eval guides, skill-creator), with no research method.",
+        "NO paper does CONTINUAL, TRAINING-FREE optimization of activation conditions from real off-policy DEPLOYMENT LOGS of missed vs false activations. The closest signals are synthetic/on-policy: R3 mines LLM-generated rejection labels (2606.03565), ProactAgent uses paired-branch counterfactual rollouts (2604.20572), Skill-or-Skip uses constructed preference pairs (2606.00510). None ingest noisy real interaction traces of when a skill wrongly fired / failed to fire and edits the trigger accordingly.",
+        "Routing is evaluated as RETRIEVAL/REWARD (NDCG, task success), not as ACTIVATION PRECISION/RECALL. No benchmark measures trigger precision (false-activation rate) and recall (missed-activation rate) for reasoning-based skill routing, even though practitioner guidance defines exactly these metrics (>90% trigger accuracy targets). A method + metric for calibrating activation conditions to minimize both error types is open.",
+        "The two large open axes are ORTHOGONAL to what thesis B proposes as novel: content-vs-condition (everyone tunes selection MODELS or entry CONTENT; nobody tunes the load-condition metadata) and rollout-vs-log (everyone uses reward rollouts or curated labels; nobody uses real implicit-feedback logs). The differentiated slot is their intersection: training-free, log-driven tuning of trigger/description conditions."
+      ],
+      "occupancy_verdict": "Thesis B as stated -- 'optimize WHEN/WHICH skills, memories, or context entries get loaded (routing/triggering/conditional activation/selective retrieval)' -- is HEAVILY OCCUPIED and consolidating fast as of mid-2026. At least four sub-slots are already taken: (1) learned selection/gating policies via RL over memory/cases -- Memento (2508.16153), Memory-R1 (2508.19828), ProactAgent/'Ask Only When Needed' (2604.20572), Organize-then-Retrieve (2606.11680); (2) skill routing as supervised retrieval -- SkillRet (2605.05726), 'Skill Is Not Document'/R3 (2606.03565), SkillsVote recommendation (2605.18401); (3) whether-to-activate gating -- Self-RAG (2310.11511), Adaptive-RAG (2403.14403), Skill-or-Skip (2606.00510); (4) state-conditioned guideline/workflow selection -- AutoGuide (2403.08978), AWM (2409.07429). A generic 'learn which skill to load when' pitch is crowded and would read as incremental. The one sub-slot that remains genuinely OPEN is narrow and specific: training-free, CONTINUAL optimization of the human-readable ACTIVATION-CONDITION artifact (the SKILL.md description / trigger metadata the base LLM itself reasons over), driven by real off-policy logs of missed and false activations, and evaluated with activation precision/recall rather than retrieval NDCG or task reward. Notably this is closer in spirit to thesis A (optimize the human-readable skill artifact, training-free, from logs + sparse truth, filling Skill-RM's 'automation of artifact construction and continual self-improving updates' gap) than to the crowded routing-model literature. Recommendation: if pursuing B, scope it tightly to trigger/description-condition optimization from mis-activation logs (the intersection of content-vs-condition and log-vs-rollout that nobody occupies); a broader 'routing/selection' framing collides head-on with 8-plus recent works.\"\n"
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Due diligence"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "paper:beyond-rubrics",
+      "phaseIndex": 1,
+      "phaseTitle": "Due diligence",
+      "agentId": "a4b25b2f3e835110d",
+      "model": "claude-fable-5",
+      "fallbackModel": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783293526585,
+      "queuedAt": 1783293526565,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Beyond Rubrics: Exploration-Guided Evaluation Skills for Re…",
+      "promptPreview": "Context: we are pivoting a paper. Old thesis: optimize an LLM agent's textual experience library from real interaction logs (off-policy, noisy implicit feedback) + targeted on-policy rollouts. New evidence pushing the pivot: (1) our own experiment showed wholesale library injection did not help a haiku agent on tau2-bench retail (baseline 70%), consistent with (2) Skill-RM's (arXiv:2606.03980) abl…",
+      "lastProgressAt": 1783293739799,
+      "tokens": 36296,
+      "toolCalls": 16,
+      "durationMs": 213214,
+      "resultPreview": "{\"found\":true,\"title\":\"Beyond Rubrics: Exploration-Guided Evaluation Skills for Reward Modeling (a.k.a. \\\"Eval-Skill\\\")\",\"arxiv_id_or_url\":\"arXiv:2606.07040 — https://arxiv.org/abs/2606.07040 (code: https://github.com/xing-stellus-yue/Eval-Skill)\",\"date_venue\":\"Submitted 5 June 2026 (v1); revised 11 June 2026 (v2). arXiv preprint, cs.CL (Computation and Language); not yet a named venue. Authors: X…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "sweep:judge-opt",
+      "phaseIndex": 1,
+      "phaseTitle": "Due diligence",
+      "agentId": "a2434330a57cb6bfc",
+      "model": "claude-fable-5",
+      "fallbackModel": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783293526594,
+      "queuedAt": 1783293526565,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Thesis A as GENERICALLY stated — 'training-free continual o…",
+      "promptPreview": "Context: we are pivoting a paper. Old thesis: optimize an LLM agent's textual experience library from real interaction logs (off-policy, noisy implicit feedback) + targeted on-policy rollouts. New evidence pushing the pivot: (1) our own experiment showed wholesale library injection did not help a haiku agent on tau2-bench retail (baseline 70%), consistent with (2) Skill-RM's (arXiv:2606.03980) abl…",
+      "lastProgressAt": 1783293838996,
+      "tokens": 56657,
+      "toolCalls": 26,
+      "durationMs": 312402,
+      "resultPreview": "{\"papers\":[{\"id\":\"arXiv:2606.03980\",\"title\":\"Skill-RM: Unifying Heterogeneous Evaluation Criteria via Agent Skill\",\"one_liner\":\"Reformulates reward/judging as executing a reusable 'Reward-Evaluation Skill' that orchestrates a bank of heterogeneous resources (verifiers, references, checklists, rubrics) via an agentic judge + deterministic readout.\",\"relation\":\"ANCHOR / closest framing. This is the …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "sweep:routing",
+      "phaseIndex": 1,
+      "phaseTitle": "Due diligence",
+      "agentId": "a5c5e886f302691cc",
+      "model": "claude-fable-5",
+      "fallbackModel": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783293526595,
+      "queuedAt": 1783293526566,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Thesis B as stated -- 'optimize WHEN/WHICH skills, memories…",
+      "promptPreview": "Context: we are pivoting a paper. Old thesis: optimize an LLM agent's textual experience library from real interaction logs (off-policy, noisy implicit feedback) + targeted on-policy rollouts. New evidence pushing the pivot: (1) our own experiment showed wholesale library injection did not help a haiku agent on tau2-bench retail (baseline 70%), consistent with (2) Skill-RM's (arXiv:2606.03980) abl…",
+      "lastProgressAt": 1783293782954,
+      "tokens": 52305,
+      "toolCalls": 24,
+      "durationMs": 256359,
+      "resultPreview": "{\"papers\":[{\"id\":\"2409.07429\",\"title\":\"Agent Workflow Memory (AWM)\",\"one_liner\":\"Induces reusable 'workflows' from past trajectories and SELECTIVELY provides only the relevant ones to guide the next action, offline or online.\",\"artifact_and_signal\":\"Artifact = a library of induced natural-language workflows + a relevance-based selection/injection step. Signal = self-induced from the agent's own pa…"
+    }
+  ],
+  "totalTokens": 145258,
+  "totalToolCalls": 66
+}

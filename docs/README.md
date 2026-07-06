@@ -4,6 +4,7 @@
 
 | 文件 | 内容 |
 |---|---|
+| `trans.md` | **跨机器交接文档**：给新 server 上 AI agent 的冷启动入口（项目速览、必读清单、搭建步骤、坑清单、资产清单、下一步 G0-G2） |
 | `sanity_check.md` | **v2 验证计划（当前有效）**：G0 可控性→G1 单条目闭环→G2 信号→G3 对垒纯on-policy；前三门仅 ~$11。待充值后执行 |
 | `pivot_proposal_20260705.md` | 转向提案（**已被 owner 否决**，2026-07-05）：owner 明确 motivation 不变（日志→优化 skill），要求重设计方法而非换问题。调研结论仍有价值（评估侧地形图 + 新引用） |
 | `pivot_due_diligence_raw.json` | 上述尽职调查的原始输出（Eval-Skill 深读 + 裁判优化/路由两个地形扫描） |

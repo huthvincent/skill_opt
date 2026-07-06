@@ -1,5 +1,7 @@
 # CHANGELOG（倒序，每次改动一行；格式见 CONSTITUTION §5）
 
+- 2026-07-05 | docs | 新增 trans.md 跨机器交接文档（新 server 冷启动全指南）；owner 将在另一台机器 clone 并用新 API 跑 sanity check v2
+
 - 2026-07-05 | docs | 新增 method.md（通俗方法讲解+对比）与 sanity_check.md（$100 内 4 门 go/no-go 验证计划）
 - 2026-07-05 | 项目 | git 历史重写：3 个 commit 作者统一为 huthvincent <huthruiz@gmail.com>，修复乱码 commit message，force push（owner 授权的一次性操作）
 

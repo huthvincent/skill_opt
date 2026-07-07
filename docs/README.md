@@ -4,6 +4,8 @@
 
 | 文件 | 内容 |
 |---|---|
+| `review_response_20260706.md` | **外部评审的逐条裁定（当前最重要）**：接受项（LCB bug 已修/设定矛盾/日志名不副实/统计纪律）、修正项（WISE-Flow 降级中威胁、GRASP 的统计门指控被驳回、G2=0.68 反转为领域天花板）、新颖性措辞、主实验预注册规则、**待 owner 三选一的设定重构** |
+| `review_verification_raw.json` | 上述裁定的一手核实数据（4 个 research agent 对 WISE-Flow/GRASP/judge-AUROC/会议档期的原始输出） |
 | `trans.md` | **跨机器交接文档**：给新 server 上 AI agent 的冷启动入口（项目速览、必读清单、搭建步骤、坑清单、资产清单、下一步 G0-G2） |
 | `sanity_check.md` | **v2 验证计划（当前有效）**：G0 可控性→G1 单条目闭环→G2 信号→G3 对垒纯on-policy；前三门仅 ~$11。待充值后执行 |
 | `pivot_proposal_20260705.md` | 转向提案（**已被 owner 否决**，2026-07-05）：owner 明确 motivation 不变（日志→优化 skill），要求重设计方法而非换问题。调研结论仍有价值（评估侧地形图 + 新引用） |

@@ -4,7 +4,9 @@
 
 | 文件 | 内容 |
 |---|---|
-| `judge_design_20260706.md` | **Self-evolve 裁判赛道设计（待 owner 决策打包方式）**：63 篇调研 → 七大缺陷（D1-D7）→ 六个改进方案（P1-P6）→ GATEKEEPER 合并设计（四层级联+元层）+ 抗攻性新指标 + 三种论文打包方式（推荐 A：裁判栈为主角） |
+| `gaa_cage_proposal_20260706.md` | **对抗共进化方案（owner 的 GAA idea → CAGE，当前最新提案）**：GAN 比喻映射 → 为何"分不清"不能当终点 → 三条件认证均衡 + 欺骗溢价(DP>1=作弊比做真贵) → 撞车地图（RQGM/CoEvoSkills/PVG）→ MVP ~$250 |
+| `gaa_due_diligence_raw.json` | 上述方案的调研原始数据（命名/框架撞车 14 篇 + 收敛判据 15 篇） |
+| `judge_design_20260706.md` | **Self-evolve 裁判赛道设计（CAGE 的判别器架构基础）**：63 篇调研 → 七大缺陷（D1-D7）→ 六个改进方案（P1-P6）→ GATEKEEPER 合并设计（四层级联+元层）+ 抗攻性新指标 + 三种论文打包方式（推荐 A：裁判栈为主角） |
 | `judge_survey_raw.json` | 上述设计的调研原始数据（4 agent × 63 篇：环内裁判/通用裁判/循环失效/工程产品） |
 | `review_response_20260706.md` | **外部评审的逐条裁定（当前最重要）**：接受项（LCB bug 已修/设定矛盾/日志名不副实/统计纪律）、修正项（WISE-Flow 降级中威胁、GRASP 的统计门指控被驳回、G2=0.68 反转为领域天花板）、新颖性措辞、主实验预注册规则、**待 owner 三选一的设定重构** |
 | `review_verification_raw.json` | 上述裁定的一手核实数据（4 个 research agent 对 WISE-Flow/GRASP/judge-AUROC/会议档期的原始输出） |

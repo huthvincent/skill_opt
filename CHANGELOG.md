@@ -1,5 +1,6 @@
 # CHANGELOG（倒序，每次改动一行；格式见 CONSTITUTION §5）
 
+- 2026-07-06 | 项目 | CAGE 主线定案(owner 拍板): PROPOSAL v2 + method.md v3 重写为对抗共进化+认证终点; MVP 指令文档待 owner 答疑后推 GAA.git
 - 2026-07-06 | 项目 | 外部评审裁定完成(docs/review_response_20260706.md): LCB Wald bug 修复(shared/stats.py, 0/3→3/3 正解+18.4pp); WISE-Flow/GRASP/judge-AUROC 一手核实(refs.bib 增至43条); 设定重构三选一待 owner; 放弃 AAAI-27 定案; **另一台 server 的 pilot 产物未 push, 待补**
 
 - 2026-07-05 | 项目 | git 历史二次重写：作者邮箱统一为 GitHub noreply 地址(11199893+huthvincent@users.noreply.github.com)保证归属显示; force push(owner 授权); 旧 clone 需重新 clone

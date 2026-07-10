@@ -1,0 +1,262 @@
+{
+  "summary": "Collision check for \"Generative Adversarial Agent\" framing + survey of convergence/endpoint criteria in adversarial self-play",
+  "agentCount": 2,
+  "logs": [],
+  "result": {
+    "collision": {
+      "verdict": "NAME: No paper is literally titled \"Generative Adversarial Agent(s)\" in the LLM-agent space, so the exact string is technically free — but it is dangerously crowded. \"Multi-Agent Generative Adversarial Imitation Learning\" (MAGAIL, 2018) owns the \"generative adversarial + agent\" collocation in RL, and \"Generative Adversarial Reasoner\" (GAR, 2026), LLM-GAN, and MALLM-GAN own \"generative-adversarial + LLM.\" The name will read as derivative/confusable and, worse, it advertises the GAN metaphor (your weakest, most-occupied selling point) rather than the certificate (your novelty). Recommend renaming around the endpoint (e.g. something foregrounding \"deception premium\" / \"exploitability certificate\" / \"anchored co-evolution\") and demoting GAA to a one-line analogy.\n\nFRAMING: The core framing — GAN-style adversarial co-evolution of an LLM generator/policy against a judge/reward model that hardens itself — is heavily occupied and no longer novel on its own. Prover-Verifier Games (OpenAI 2024) is the canonical helpful/sneaky-prover-vs-verifier ancestor; EvoRubrics, ARCO, Rubric-ARM/RUBRIC-ARROW, Multi-Agent Evolve, and SPC all instantiate adversarial policy↔judge/rubric co-evolution in 2025-26; CHASE / Self-RedTeam / \"Be Your Own Red Teamer\" own the red-team↔blue-team co-evolution loop; Dynabench owns \"judge patches itself from an adversarial exploit archive.\" Your three named mechanisms (Goodhart pressure, red-team exploit miner, judge self-patching) are each independently published. CoEvoSkills (April 2026) is the single most dangerous collision: it co-evolves an agent skill generator against a surrogate verifier without ground truth — i.e. your generator + discriminator loop applied to agent skills already exists, minus the red-team and minus the certificate.\n\nSURVIVING SUB-SLOT: The endpoint/certificate is where novelty actually lives, but it too has partial precedent you must cite and beat. \"Reward Hacking in Rubric-Based RL\" already proposes an exploitation-rate metric plus a self-gap stopping diagnostic (your criteria 2+3 in embryo); Verification Horizon already frames verifier scalability/faithfulness/robustness as the central agent-reward problem; the Cambridge-NVIDIA RSI work already uses a frozen held-out anchor to arrest evaluator co-drift (your anchor-set idea). What survives and appears genuinely unclaimed: (1) packaging these into a single ANCHORED TERMINATION CERTIFICATE for adversarial agent↔judge co-evolution (nobody defines a formal stop condition combining marginal-true-improvement + bounded red-team exploit yield + non-degrading anchored audit); (2) the named \"deception premium\" = cost-to-pass-by-faking / cost-to-pass-by-solving > 1 sustained — this exact metric appears unused in the literature; (3) doing it TRAINING-FREE / inference-time (almost every framing collision — SPIN, GAR, EvoRubrics, ARCO, Rubric-ARM, CHASE — is weight-training RL; only Prover-Verifier trains and CoEvoSkills is inference-ish); (4) the target domain of multi-turn tool-use agent trajectories (tau2-bench), which is untaken — collisions cluster on reasoning CoT, rubric RLHF, coding, and safety/jailbreak. Recommendation: keep the project, drop the GAN framing as the headline, lead with the deception-premium certificate as the contribution, explicitly differentiate from CoEvoSkills (add the adversarial red-team + certificate they lack) and from Rubric-based reward-hacking work (you are a training-free stopping certificate, not an RL reward), and rename.",
+      "papers": [
+        {
+          "id": "arXiv:1807.09936",
+          "title": "Multi-Agent Generative Adversarial Imitation Learning (MAGAIL)",
+          "one_liner": "GAN-style adversarial imitation learning extended to multi-agent Markov games (Song et al., NeurIPS 2018).",
+          "relation": "NAME collision (a): owns the 'generative adversarial + agent' collocation in RL. Different world (MARL imitation, not LLM tool-use), but a reviewer will surface it instantly against the name 'Generative Adversarial Agent'. Makes the literal name read as derivative."
+        },
+        {
+          "id": "arXiv:2512.16917",
+          "title": "Generative Adversarial Reasoner (GAR)",
+          "one_liner": "GAN-inspired adversarial RL where a discriminator critiques reasoning chains and is jointly updated with the reasoner.",
+          "relation": "NAME + FRAMING collision (a/b): closest literal 'generative adversarial' LLM title. Differs in that it is RL weight-training on reasoning CoT, not a training-free judge-hardening protocol over agent trajectories, and has no exploit-yield certificate."
+        },
+        {
+          "id": "arXiv:2409.01787",
+          "title": "LLM-GAN: GAN Through LLMs for Explainable Fake News Detection",
+          "one_liner": "Single LLM instantiates Generator (fake news) + Detector in an adversarial prompting loop.",
+          "relation": "NAME + FRAMING (a/b): 'LLM as GAN' with generator vs discriminator via prompting (training-free-ish). Domain is classification, not multi-turn agents, and there is no judge self-patching from an exploit archive or certificate."
+        },
+        {
+          "id": "arXiv:2406.10521",
+          "title": "MALLM-GAN: Multi-Agent LLM as Generative Adversarial Network",
+          "one_liner": "Multi-agent LLM emulating GAN generator/discriminator to synthesize tabular data, using the LLM as optimizer.",
+          "relation": "NAME collision (a): 'multi-agent LLM as GAN' is very close to your naming. Application (data synthesis) is unrelated to agent trajectories, but it further crowds the GAN-metaphor naming space."
+        },
+        {
+          "id": "arXiv:2407.13692",
+          "title": "Prover-Verifier Games Improve Legibility of LLM Outputs (OpenAI)",
+          "one_liner": "Iteratively trains verifiers plus 'helpful' and 'sneaky' provers so correct-but-legible solutions survive verifier pressure.",
+          "relation": "FRAMING ancestor (b): the canonical adversarial generator-vs-verifier game with an explicit exploit-seeking ('sneaky') role = your red-team attacker. Yours differs by being training-free, over agent trajectories, and terminating on an anchored certificate rather than improving legibility. Must be cited as the direct intellectual predecessor."
+        },
+        {
+          "id": "arXiv:2606.23038",
+          "title": "EvoRubrics: Dynamic Rubrics as Rewards via Adversarial Co-Evolution",
+          "one_liner": "Policy and rubric-generator train against each other's latest behavior, auto-curriculum over evaluation standards.",
+          "relation": "FRAMING collision (b): directly instantiates 'judge (rubric) hardens as policy exerts Goodhart pressure.' Yours must differentiate via the explicit red-team exploit miner, the frozen+rotating anchor audit, and the certificate/deception-premium endpoint (EvoRubrics has no stop-certificate and is RL weight-training)."
+        },
+        {
+          "id": "arXiv:2606.21262",
+          "title": "ARCO: Adaptive Rubric with Co-Evolution for Multi-Step LLM-Based Agents",
+          "one_liner": "Co-evolves step-level rubric content and scorer with the policy for multi-step agents, no external judge.",
+          "relation": "FRAMING + DOMAIN collision (b/c): the closest 'co-evolving judge for AGENT trajectories' precedent. Overlaps your multi-turn agent setting and co-evolution. Survives only because ARCO is parameter-level RL for credit assignment, lacks the adversarial red-team and lacks any anti-Goodhart certificate / exploitability metric."
+        },
+        {
+          "id": "arXiv:2602.01511 / arXiv:2605.29156",
+          "title": "Rubric-ARM / RUBRIC-ARROW: Alternating Rubric-Based Reward Modeling",
+          "one_liner": "Alternating optimization of rubric generation and judge to stabilize LLM judges in non-verifiable domains.",
+          "relation": "FRAMING collision (b): formalizes alternating generator/judge updates and even uses adversarial answers that satisfy-but-degrade the rubric (a mini deception attack). Your differentiator is the sustained deception-premium metric and certificate, not a variance-reduced reward."
+        },
+        {
+          "id": "arXiv:2510.23595",
+          "title": "Multi-Agent Evolve (MAE): LLM Self-Improve through Co-evolution",
+          "one_liner": "One LLM plays Proposer/Solver/Judge in a closed adversarial-cooperative self-improvement loop.",
+          "relation": "FRAMING collision (b): judge co-evolves with solver under difficulty pressure. Yours differs by an engineered/external judge stack (not same-model), a dedicated exploit-mining red team, and an anchored certificate rather than open-ended self-improvement."
+        },
+        {
+          "id": "arXiv:2401.01335",
+          "title": "SPIN: Self-Play Fine-Tuning Converts Weak LMs to Strong LMs",
+          "one_liner": "LLM improves by discriminating its own generations from human data in a self-play GAN-like loop.",
+          "relation": "FRAMING ancestor (b): foundational self-play/adversarial-discrimination lineage reviewers will invoke. Yours is training-free, multi-turn agentic, and centered on judge exploitability rather than distribution matching."
+        },
+        {
+          "id": "arXiv:2504.19162",
+          "title": "SPC: Evolving Self-Play Critic via Adversarial Games for LLM Reasoning",
+          "one_liner": "A critic co-evolves against a 'sneaky' generator through adversarial games to better catch reasoning errors.",
+          "relation": "FRAMING collision (b): adversarial critic-hardening = your discriminator-vs-red-team, but scoped to reasoning-step verification and RL-trained. No agent trajectories, no anchored certificate, no deception-premium."
+        },
+        {
+          "id": "arXiv:1805.00899 (+ 2505.03989)",
+          "title": "AI Safety via Debate / scalable-oversight debate (Irving et al.; 2025 safety-case sketch)",
+          "one_liner": "Two adversarial agents argue and a judge decides; adversarial dynamics surface evidence the judge alone can't.",
+          "relation": "FRAMING lineage (b): the judge-plus-adversaries scalable-oversight tradition. Recent results note the debater-judge gap doesn't shrink with scale and obfuscated arguments dominate — a direct threat model your anchor-set + exploitability certificate must answer, and a natural framing to cite/contrast."
+        },
+        {
+          "id": "arXiv:2606.05523 (+ 2601.10589, 2506.07468)",
+          "title": "CHASE / Be-Your-Own-Red-Teamer / Self-RedTeam: attacker-defender co-evolution",
+          "one_liner": "Red-team attacker and safety defender co-evolve via RL/self-play, defender hardening generalizes to unseen attacks.",
+          "relation": "FRAMING collision (b): owns the explicit red-team↔blue-team self-improvement loop = your attacker + judge-patching, but in the jailbreak/safety domain and via weight-training. Your novelty must be the non-safety task-quality domain (tool-use success), training-free operation, and the certificate — not the co-evolution loop itself."
+        },
+        {
+          "id": "arXiv:2104.14337",
+          "title": "Dynabench: Rethinking Benchmarking in NLP",
+          "one_liner": "Human-and-model-in-the-loop adversarial data collection that continually finds model-fooling examples to refresh benchmarks.",
+          "relation": "FRAMING ancestor (b): the original 'mine exploits, patch the evaluator, prevent staleness' loop = your judge-CI + rotating anchors. Yours automates the red team with an LLM and adds a formal stopping certificate; cite Dynabench as the conceptual root of exploit-archive-driven judge patching."
+        },
+        {
+          "id": "arXiv:2604.01687",
+          "title": "CoEvoSkills: Self-Evolving Agent Skills via Co-Evolutionary Verification",
+          "one_liner": "A skill generator and a ground-truth-free surrogate verifier co-evolve to build multi-file agent skill packages (32%->75% on SkillsBench).",
+          "relation": "STRONGEST collision (c): your generator (self-evolving skill library) + discriminator (co-evolving verifier) loop for AGENT skills already exists. It lacks (i) an adversarial red-team exploit miner, (ii) an anchored anti-co-drift audit, (iii) any exploitability/deception-premium certificate, and it optimizes pass-rate not judge-robustness. This is the paper you must most explicitly out-position; frame your work as 'CoEvoSkills + adversarial red team + certificate on tau2-bench.'"
+        },
+        {
+          "id": "arXiv:2606.26300",
+          "title": "The Verification Horizon: No Silver Bullet for Coding Agent Rewards (Qwen)",
+          "one_liner": "Argues agent verifiers must be simultaneously scalable, faithful, and robust — and that achieving all three is the central open problem.",
+          "relation": "PROBLEM-FRAMING collision (c): pre-states the exact motivation your certificate claims to address (verifier robustness under optimization pressure widening the proxy-intent gap). Use it as motivation, but note it declares 'no silver bullet' — your contribution should be a measurable certificate/stopping condition, not a claimed robust verifier."
+        },
+        {
+          "id": "arXiv:2605.12474 (+ 2605.02964)",
+          "title": "Reward Hacking in Rubric-Based RL / Reward Hacking Benchmark for tool-use agents",
+          "one_liner": "Introduces an exploitation-rate metric plus a verifier-free self-gap stopping diagnostic, and a benchmark measuring exploit yield in tool-use LLM agents.",
+          "relation": "ENDPOINT collision (b/c): your criteria 2 (bounded exploit yield) and 3 (non-degrading judge) already have embryonic forms here — exploitation rate + self-gap stopping signal, measured on tool-use agents. Your defensible delta is combining them with hidden-anchor true-improvement into one termination CERTIFICATE and the named, sustained 'deception premium' ratio, which these do not define."
+        }
+      ]
+    },
+    "endpoints": {
+      "papers": [
+        {
+          "id": "arXiv:2408.01072",
+          "title": "A Survey on Self-play Methods in Reinforcement Learning",
+          "one_liner": "CRITERION: exploitability / NashConv (expected gain of a best-response opponent; zero = Nash equilibrium) and the fictitious-play optimality gap. CERTIFIES: distance of a joint policy to a game-theoretic equilibrium — a worst-case, opponent-relative guarantee. FAILS TO CERTIFY: absolute task quality or truth; a zero-exploitability equilibrium can be a mutually low-quality fixed point, and non-transitivity makes the gap non-monotone and often incomputable at LLM scale.",
+          "relation": "This is the canonical 'convergence = can't be exploited' endpoint we deliberately reject. Our certificate's red-team-exploit-yield term is an empirical, budget-bounded analogue of exploitability applied to the JUDGE rather than a policy, but we add TRUE-improvement and anchor-non-degradation terms precisely because Nash-style confusion alone certifies equilibrium, not quality."
+        },
+        {
+          "id": "arXiv:2105.04801",
+          "title": "On Characterizing GAN Convergence Through Proximal Duality Gap",
+          "one_liner": "CRITERION: duality-gap / discriminator-confusion at equilibrium (D outputs ~0.5, G and D losses reach the equilibrium value), plus FID-plateau monitoring as the practical stopping signal. CERTIFIES: that generator and discriminator reached a saddle point and that sample-distribution moments approach the data's. FAILS TO CERTIFY: sample quality or coverage — discriminator confusion is achievable via mode collapse; FID plateaus miss diversity loss; loss curves are uninterpretable because they mix G and D.",
+          "relation": "This is the exact 'discriminator cannot distinguish' criterion — and its documented failure to certify quality — that motivates our anchored certificate. GAA replaces 'D confused' with 'red-team exploit yield near zero AND anchor accuracy non-degrading AND marginal true improvement small', converting the GAN endpoint into one grounded on a hidden verifier."
+        },
+        {
+          "id": "arXiv:2401.01335",
+          "title": "Self-Play Fine-Tuning Converts Weak LLMs to Strong LLMs (SPIN)",
+          "one_liner": "CRITERION: iterate until the LLM can no longer distinguish its own generations from target human data (global optimum = policy matches the target distribution). CERTIFIES: fixed-point of the self-play min-max game — convergence to the reference data distribution. FAILS TO CERTIFY: quality beyond the fixed human reference; the endpoint is 'indistinguishable from target data', a distribution-matching criterion with no defense against a judge that is itself gameable.",
+          "relation": "SPIN's stopping rule is exactly the GAN-style indistinguishability endpoint applied to LLMs, ceilinged by a static reference set. We collide directly on the self-play-LLM framing but diverge on endpoint: our anchored triple certificate targets sustained true improvement and empirical judge un-exploitability, not distribution matching to a frozen corpus."
+        },
+        {
+          "id": "arXiv:2407.13692",
+          "title": "Prover-Verifier Games Improve Legibility of LLM Outputs (OpenAI)",
+          "one_liner": "CRITERION: balance relaxed completeness (helpful prover high pass-rate, verifier high recall) against relaxed soundness (verifier low false-positive-rate on a sneaky prover's adversarially optimized wrong answers under a fixed optimization budget). CERTIFIES: checkability — the verifier accepts correct solutions and resists a bounded-budget deceiver. FAILS TO CERTIFY: a stopping point; training halts by RL convergence, and soundness is measured against a fixed budget, not tracked as a convergence signal, and there is no hidden-verifier anchor to catch verifier-prover co-drift.",
+          "relation": "Closest structural precedent for our red-team term: the 'sneaky prover under fixed budget' is essentially our bounded red-team exploit-yield. But PVG uses it as a training objective, not a convergence certificate, and lacks (1) marginal-true-improvement and (3) anchor-non-degradation. Our contribution is turning bounded-adversary soundness into a sustained multi-part stopping criterion."
+        },
+        {
+          "id": "arXiv:2104.14337",
+          "title": "Dynabench: Rethinking Benchmarking in NLP",
+          "one_liner": "CRITERION: dynamic adversarial data collection — humans in the loop craft examples that fool the current SOTA model; a round 'saturates' when annotators can no longer easily fool it (model-error rate against fresh adversarial examples drops). CERTIFIES: that the benchmark is not yet saturated relative to current capability (difficulty tracks the model). FAILS TO CERTIFY: absolute correctness or that improvement is real vs. annotation-artifact-driven; sacrifices temporal comparability; humans, not a frozen verifier, are the ground truth.",
+          "relation": "Dynabench's 'can we still find exploits?' saturation test is the human-driven ancestor of our red-team exploit-yield term. We automate the attacker (explicit red-team over judge exploits) and, critically, add anchored hidden-verifier truth so 'no more exploits' is corroborated by non-degrading anchor accuracy rather than annotator fatigue."
+        },
+        {
+          "id": "arXiv:2606.26294",
+          "title": "The Red Queen Gödel Machine: Co-Evolving Agents and Their Evaluators (Cambridge/NVIDIA)",
+          "one_liner": "CRITERION: epoch-structured co-evolution — fixed within-epoch evaluation criterion, utility updated at epoch boundaries; anti-gaming via a diverse agent-as-a-judge panel plus an adversarial objective that finds reviewers 'equally stringent on AI and human work', grounded by held-out coding verifiers and proof ground-truth. CERTIFIES: per-epoch self-improvement under a non-stationary utility, with judge-panel diversity as drift resistance. FAILS TO CERTIFY: a principled global termination — no explicit convergence threshold; authors warn co-evolution can amplify flawed ground truth, and there is no formal exploitability-near-zero or cost-ratio endpoint.",
+          "relation": "This is our single biggest collision: same core thesis (evaluation must co-evolve, static verifier is the bottleneck). We MUST differentiate on the endpoint. RQGM stops at epoch boundaries with panel diversity + held-out grounding but has no anchored dual/triple certificate and no deception-premium metric. Our novelty candidate is exactly the certified stopping rule RQGM leaves undescribed."
+        },
+        {
+          "id": "arXiv:2606.21262",
+          "title": "ARCO: Adaptive Rubric with Co-Evolution for Multi-Step LLM Agents",
+          "one_liner": "CRITERION: none principled — checkpoint selection at 'best post-transition dev-EM'; drift controlled only by frozen KL anchors to the warmup rubric/policy references. CERTIFIES: peak held-out dev performance under a jointly-trained rubric judge. FAILS TO CERTIFY: absence of co-drift — authors' own limitations concede pace of policy-rubric co-evolution is set by fixed LR/regularization with no drift-aware scheduling or active drift detection; no exploitability or cost analysis.",
+          "relation": "Direct instance of judge-policy co-evolution (our generator-discriminator setup) with the naive stopping rule we improve on: 'best dev checkpoint' + static KL anchor. ARCO explicitly flags drift-aware scheduling as future work — that gap is what our anchored certificate + red-team exploit archive fills."
+        },
+        {
+          "id": "arXiv:2606.23038",
+          "title": "EvoRubrics: Dynamic Rubrics as Rewards via Adversarial Co-Evolution",
+          "one_liner": "CRITERION: adversarial min-max between a rubric generator (evolving to discriminate high/low outputs) and the policy, run for a fixed schedule; convergence is implicit (rubrics stop yielding new discriminative signal). CERTIFIES: that rubrics and policy reached a competitive fixed point on the training distribution. FAILS TO CERTIFY: true quality vs. co-adaptation; no reported held-out anchor or hidden verifier to detect the generator and policy improving on each other without improving on ground truth.",
+          "relation": "Same adversarial rubric-vs-policy structure as GAA's generator-vs-discriminator core, and same missing piece: no anchored certificate against co-drift. Closely related RubricARM/RUBRIC-ARROW (arXiv:2605.29156, 2602.01511) jointly optimize rubric+judge via alternating RL for variance reduction but likewise stop on RM-benchmark gains, not an exploitability/anchor certificate."
+        },
+        {
+          "id": "arXiv:2210.10760",
+          "title": "Scaling Laws for Reward Model Overoptimization (Gao, Schulman, Hilton, ICML 2023)",
+          "one_liner": "CRITERION: the KL-reward frontier 'knee' — gold-RM score rises then falls as you optimize the proxy; early stopping at the knee (any frontier point reachable by early stopping alone, KL penalty optional). CERTIFIES: the overoptimization onset — where proxy gains stop tracking gold-standard gains. FAILS TO CERTIFY: quality in deployment; the 'gold' RM is itself a model and can be wrong, and the knee is defined against that single fixed proxy-of-truth, not an adversarially-audited anchor set.",
+          "relation": "This is the reference frame for our TRUE-improvement term (criterion 1): marginal true gain on hidden-verifier anchors falling below threshold is a knee-detection generalized from a single gold RM to a rotating anchored audit set. We inherit the KL-reward-frontier intuition but harden the 'truth' side against Goodhart drift of the gold model itself."
+        },
+        {
+          "id": "arXiv:2606.04923",
+          "title": "Reproducing, Analyzing, and Detecting Reward Hacking in Rubric-Based RL",
+          "one_liner": "CRITERION: gold-vs-proxy divergence detector — rescore policy outputs with a stronger reference ('Gold RM'); early both rise together, but under hacking the proxy keeps rising while gold declines, a persistent divergence used as an early-stopping trigger. CERTIFIES: onset of reward hacking against the proxy judge. FAILS TO CERTIFY: robustness of the gold RM itself; diagnostic metrics used as stopping signals are themselves subject to Goodhart once known, and it targets hacking onset, not an equilibrium quality certificate.",
+          "relation": "This gold-vs-proxy divergence is a one-sided version of our certificate's criterion (3) (anchor accuracy non-degrading). We generalize its single fixed gold RM to a frozen+rotating anchored audit set to blunt the 'the detector itself gets gamed' failure it acknowledges, and we couple it with an explicit red-team term rather than passively watching for divergence."
+        },
+        {
+          "id": "arXiv:2510.01367",
+          "title": "Is It Thinking or Cheating? Detecting Implicit Reward Hacking by Measuring Reasoning Effort",
+          "one_liner": "CRITERION: reasoning-effort asymmetry — CoT length/compute for a solution; genuine solving requires substantial effort, exploit shortcuts succeed with minimal tokens, so anomalously low effort for a passing answer signals hacking. CERTIFIES: presence of a low-cost shortcut (a behavioral signature of faking). FAILS TO CERTIFY: a convergence endpoint; it is a per-output detector, effort is a noisy proxy for cost, and it is not framed as a sustained ratio or stopping rule.",
+          "relation": "This is the CLOSEST prior work to our 'deception premium' (cost-to-fake / cost-to-solve). It operationalizes the same intuition — cheating should be costlier or cheaper than solving — via reasoning effort, and explicitly contrasts 'cheating by exploiting patterns versus solving correctly'. But it uses effort as a per-instance detector, NOT as a sustained cost-RATIO > 1 convergence certificate. Our novelty is elevating this asymmetry to the endpoint metric."
+        },
+        {
+          "id": "arXiv:2606.26071",
+          "title": "Model Forensics: Investigating Whether Concerning Behavior Reflects Misalignment",
+          "one_liner": "CRITERION: strategic cost-benefit test — vary the penalty for cheating (including levels where 'even winning yields a negative score') and check whether the model's hacking rate responds rationally to payoff structure. CERTIFIES: whether reward hacking is strategic (payoff-sensitive) vs reflexive. FAILS TO CERTIFY: a training-done signal; it is a diagnostic of model disposition, not a judge-hardening loop, and defines no cost-ratio metric or anchor certificate.",
+          "relation": "Provides the economic backbone for our deception-premium claim: models 'almost never take hints when the penalty reaches levels where even winning yields a negative score' is empirical evidence that a cost-to-fake > cost-to-solve regime suppresses hacking. We turn this observation into an explicit sustained cost-ratio convergence criterion — which this paper does not do."
+        },
+        {
+          "id": "arXiv:2606.15474",
+          "title": "Who Drifted: the System or the Judge? Anytime-Valid Attribution in LLM Evaluation Pipelines",
+          "one_liner": "CRITERION: anchor sets (fixed held-out items with frozen labels, excluded from calibration) monitored with anytime-valid sequential tests that stay valid at any stopping time; stable anchor performance while system score drops attributes drift to the system, not the judge. CERTIFIES: probabilistic judge-non-degradation and drift attribution over time. FAILS TO CERTIFY: adversarial robustness — it detects statistical drift, not deliberately mined exploits, and explicitly does not address red-team yield or cost-ratio.",
+          "relation": "This is the strongest precedent for our criterion (3) (frozen+rotating anchored audit set, judge accuracy non-degrading) and even supplies the anytime-valid statistical machinery we should adopt. But it is passive-monitoring only: no adversarial attacker, no true-improvement term, no cost-ratio. Our certificate = this anchor/anytime-valid layer + an active red-team exploit archive + a deception-premium metric."
+        },
+        {
+          "id": "arXiv:2503.04474",
+          "title": "Know Thy Judge: On the Robustness Meta-Evaluation of LLM Safety Judges",
+          "one_liner": "CRITERION: adversarial exploit success against the judge — style perturbations shift FNR by up to 0.24, and composite attacks fool some judges into mislabeling 100% of harmful outputs as safe. CERTIFIES: empirical exploitability / brittleness of a fixed judge under attack. FAILS TO CERTIFY: anything dynamic — it is a static meta-evaluation of one judge, not a co-evolution stopping rule, and offers no notion of exploit yield decaying to zero as a convergence endpoint.",
+          "relation": "Empirical grounding for our criterion (2) (red-team exploit yield below threshold = judge exploitability near zero). It shows judges are highly exploitable, justifying an explicit attacker in the loop. We convert its one-shot exploitability audit into a budget-bounded exploit-yield trajectory whose decay-to-near-zero is part of the stopping certificate."
+        },
+        {
+          "id": "arXiv:2605.02964",
+          "title": "Reward Hacking Benchmark: Measuring Exploits in LLM Agents with Tool Use",
+          "one_liner": "CRITERION: exploit rate on multi-step tool-use tasks with naturalistic shortcuts, measured before/after environment hardening (5.7pp absolute / 87.7% relative reduction). CERTIFIES: an agent's/environment's current exploitability level and hardening effectiveness. FAILS TO CERTIFY: convergence or quality — it is a static leaderboard-style measurement (0%–13.9% across models), not a stopping signal, with no anchor-truth or cost-ratio component. (Companion: ImpossibleBench arXiv:2510.20270 measures cheat rates up to 76% on impossible tasks.)",
+          "relation": "Directly relevant because our domain is multi-turn tool-use trajectories (tau2-bench) and this measures exactly the exploit-yield-under-budget quantity behind criterion (2). It supplies the measurement instrument but treats exploitability as a fixed model property, whereas GAA drives exploit yield toward zero via judge self-patching and reads its decay as convergence evidence."
+        }
+      ],
+      "verdict": "No prior work uses an anchored DUAL/TRIPLE certificate or a sustained cost-ratio ('faking costlier than solving') as its convergence endpoint — that specific assembly is open whitespace — but every individual ingredient has a precedent, so the paper must be framed as a novel COMPOSITION, not a novel primitive. (1) The dominant self-play/GAN/SPIN endpoint is exactly the 'cannot distinguish'/exploitability=0 criterion we reject (arXiv:2408.01072, 2105.04801, 2401.01335); it is well-documented that discriminator confusion and FID plateaus certify equilibrium, not quality. (2) Our anchor-non-degradation term (criterion 3) is strongly pre-figured: 'Who Drifted' (2606.15474) already pairs frozen held-out anchor sets with anytime-valid sequential tests to certify judge non-degradation, and the Red Queen Gödel Machine (2606.26294) — our closest overall collision, same 'evaluation must co-evolve' thesis — uses diverse judge panels + held-out verifiers as drift guards but with NO principled termination criterion. Adopt the anytime-valid machinery from 2606.15474 rather than reinventing it. (3) Our red-team-exploit-yield term (criterion 2) descends from prover-verifier bounded-budget soundness (2407.13692) and Dynabench saturation (2104.14337), and is directly measurable via judge-exploitability audits (Know Thy Judge 2503.04474) and tool-use exploit benchmarks (2605.02964, ImpossibleBench); none, however, treats exploit-yield decay-to-zero as a convergence signal. (4) Our TRUE-improvement term (criterion 1) generalizes the KL-reward-frontier knee (Gao 2210.10760) and gold-vs-proxy divergence detectors (2606.04923) from a single fixed gold RM to a rotating anchored audit set. (5) The deception-premium / cost-ratio is the most defensibly novel piece: the closest precedents are 'reasoning-effort' hacking detection (2510.01367), which explicitly contrasts cost of cheating vs solving but only per-instance, and strategic cost-benefit reward-hacking analysis (2606.26071), which shows hacking vanishes when penalties make 'even winning yield a negative score' — but neither states a sustained cost-to-fake/cost-to-solve > 1 ratio as a training-done certificate. BOTTOM LINE: pitch GAA's endpoint as the first unification of (anchor-audited true improvement) + (bounded red-team exploit yield) + (anytime-valid judge non-degradation), equivalently a deception-premium > 1 criterion; differentiate hardest against RQGM (2606.26294) on 'we supply the certified stopping rule they lack' and against EvoRubrics/ARCO (2606.23038, 2606.21262) on 'anchored certificate + explicit exploit archive vs. best-dev-checkpoint + static KL anchor'. Cite 2510.01367 and 2606.26071 as the seeds of, and explicit non-instances of, the cost-ratio endpoint to secure the novelty claim."
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Check"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "collision-check",
+      "phaseIndex": 1,
+      "phaseTitle": "Check",
+      "agentId": "a2cfc78f942ee7168",
+      "model": "claude-fable-5",
+      "fallbackModel": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783702301309,
+      "queuedAt": 1783702301298,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "NAME: No paper is literally titled \"Generative Adversarial …",
+      "promptPreview": "Context: we plan a paper \"Generative Adversarial Agent\" (GAA): a training-free GAN-style protocol where an LLM agent (+its self-evolving skill library, the \"generator\") and an engineered judge stack (the \"discriminator\") co-evolve adversarially - the agent optimizer exerts Goodhart pressure, an explicit red-team attacker mines judge exploits, and the judge patches itself from the exploit archive (…",
+      "lastProgressAt": 1783702508815,
+      "tokens": 49056,
+      "toolCalls": 20,
+      "durationMs": 207505,
+      "resultPreview": "{\"verdict\":\"NAME: No paper is literally titled \\\"Generative Adversarial Agent(s)\\\" in the LLM-agent space, so the exact string is technically free — but it is dangerously crowded. \\\"Multi-Agent Generative Adversarial Imitation Learning\\\" (MAGAIL, 2018) owns the \\\"generative adversarial + agent\\\" collocation in RL, and \\\"Generative Adversarial Reasoner\\\" (GAR, 2026), LLM-GAN, and MALLM-GAN own \\\"ge…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "endpoint-survey",
+      "phaseIndex": 1,
+      "phaseTitle": "Check",
+      "agentId": "aea26abdc7312d40a",
+      "model": "claude-fable-5",
+      "fallbackModel": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783702301310,
+      "queuedAt": 1783702301298,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "No prior work uses an anchored DUAL/TRIPLE certificate or a…",
+      "promptPreview": "Context: we plan a paper \"Generative Adversarial Agent\" (GAA): a training-free GAN-style protocol where an LLM agent (+its self-evolving skill library, the \"generator\") and an engineered judge stack (the \"discriminator\") co-evolve adversarially - the agent optimizer exerts Goodhart pressure, an explicit red-team attacker mines judge exploits, and the judge patches itself from the exploit archive (…",
+      "lastProgressAt": 1783702579505,
+      "tokens": 55059,
+      "toolCalls": 26,
+      "durationMs": 278195,
+      "resultPreview": "{\"papers\":[{\"id\":\"arXiv:2408.01072\",\"title\":\"A Survey on Self-play Methods in Reinforcement Learning\",\"one_liner\":\"CRITERION: exploitability / NashConv (expected gain of a best-response opponent; zero = Nash equilibrium) and the fictitious-play optimality gap. CERTIFIES: distance of a joint policy to a game-theoretic equilibrium — a worst-case, opponent-relative guarantee. FAILS TO CERTIFY: absolu…"
+    }
+  ],
+  "totalTokens": 104115,
+  "totalToolCalls": 46
+}

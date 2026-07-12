@@ -35,3 +35,5 @@ third_party/*
 # 杂项
 .DS_Store
 *.swp
+outside_reports/output.zip
+outside_reports/output_unpacked/

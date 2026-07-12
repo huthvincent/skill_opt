@@ -2,6 +2,12 @@
 
 > 对另一台 server 回传的 `outside_reports/final_report.md` 的独立评审。注意：只回传了 report，**原始产物（ledger.jsonl/curves.csv/archive/config.json）未传**，本评审基于 report 文本 + 内部一致性检查。
 
+## 〇、原始数据核验（2026-07-11，收到 output.zip 后）
+拿到全部 1312 个原始产物，逐项核对**全部通过**：config 符合指令（models/red_team/admission/splits）、三池零重叠（并集 114，两两交集 0）、ledger 24 行、Phase 2 逐种子齐全。报告忠实于数据，无杜撰。以下三点是摊开原始数据后的**新发现**：
+- **[新-成功] 证书必要性被干净证明**：ledger 显示裁判判对率 CAGE 0.675→0.725（硬化并稳住）、Static 恒 ~0.69（不学）、**CoEvo 0.525→0.475~0.55（打补丁不过 CI 反而把裁判打坏，低于什么都不做的 Static）**。即"无证书共进化"主动损害裁判——这是 B2 臂设计要证的东西，且是整个数据集里最干净的正向结果，直接支撑"证书是必要的"这一 CAGE 核心主张（哪怕 DP 没到 1）。
+- **[新-证据] forge 攻击确实不现实且拉低 DP**：archive 207 个成功作弊里 **136 个(66%)是 forge_tool_result**（篡改工具返回，agent 真实 rollout 无法执行），realistic 攻击只占 34%。粗算：剔除 forge 后 cheat_yield≈原值×0.34，DP 反比放大≈×3 → CAGE 峰值 DP 0.44 在 realistic 威胁模型下可能≈1.3。**需 per-attack 日志精算（那边有），但方向明确：DP<1 被不现实攻击系统性低估。**
+- **[新-确认] Phase 2 的 Haiku 天花板混杂未解**：PHASE2_FINDINGS.md 归因第 3 条自认"需 Sonnet-agent 复跑隔离(owner 已预批)"未执行。
+
 ## 一、报告质量：高，诚实，数字自洽
 - 内部一致性抽查通过：Phase 2 空库基线 0.700 = (40×0.725 + 20×0.65)/60 ✓，说明报告非杜撰。
 - 三阶段递进（主实验→能否逼 DP>1→能否提升真值），结论口径克制（只陈述事实），踩坑如实记录（tau2 全局目录 EOF、CI 逐组件化修复）。

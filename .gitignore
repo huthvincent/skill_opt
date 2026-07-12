@@ -37,3 +37,5 @@ third_party/*
 *.swp
 outside_reports/output.zip
 outside_reports/output_unpacked/
+outside_reports/GAA.zip
+outside_reports/exp0_unpacked/

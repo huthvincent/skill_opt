@@ -1,5 +1,7 @@
 # CHANGELOG（倒序，每次改动一行；格式见 CONSTITUTION §5）
 
+- 2026-07-12 | 项目 | 整理导出到新仓库 git@github.com:huthvincent/self-evo-agent.git（全新 git 历史）: skill_Opt 全量 + GAA 实验机精选快照 + 新写 docs/{SPEC,HISTORY,RESULTS,STATUS} 综合四件套; 三重凭证扫描零命中, CHANGELOG 个人邮箱已脱敏
+
 - 2026-07-06 | docs | benchmark 选择核实: tau2 确认主选(retail+telecom 划分, airline=50 太小降 OOD); 加 AppWorld 作第二 benchmark(正式实验); refs 增至 47 条
 
 - 2026-07-06 | 项目 | CAGE 主线定案(owner 拍板): PROPOSAL v2 + method.md v3 重写为对抗共进化+认证终点; MVP 指令文档待 owner 答疑后推 GAA.git

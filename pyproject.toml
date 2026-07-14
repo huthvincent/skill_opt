@@ -12,6 +12,7 @@ dependencies = [
     "rich>=13.0",
     "tau2",
     "scipy>=1.18.0",
+    "litellm>=1.82.6",
 ]
 
 [build-system]

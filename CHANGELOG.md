@@ -1,5 +1,7 @@
 # CHANGELOG（倒序，每次改动一行；格式见 CONSTITUTION §5）
 
+- 2026-07-14 | REPLAY/shared | 新增 GitHub Copilot 后端（`LLM_BACKEND=copilot`，litellm `github_copilot/` 路由，无 API key、订阅额度、无按 token 计费）解 Gate1 的余额耗尽痛点；shared/llm.py 加 `_copilot_chat`+`CostTracker.add_flat`；新增 E0.5 探针 `REPLAY/script/copilot_probe.py`（含 Windows UTF-8 修复）；gate1_ceiling.py 加 `--backend/--model/...` 参数。实测：gpt-4o 全链路 GO（tau2 reward=1.0, function-calling 正常）。**限制**：（1）Copilot 只能 pin 到滚动别名（如 `claude-haiku-4.5`），不能 pin 到精确版本 model（Anthropic 可 pin `claude-haiku-4-5-20251001`）→ GitHub 会悄悄换权重, 适合冒烟/开发；（2）**Copilot 版 Claude 拒绝扮演 tau2 user simulator**（护栏所致, 见 LEDGER _105916）→ Copilot 跑 tau2 须用 gpt 系, 且与 Rui 的 Anthropic-haiku 基线不可比；（3）litellm 路由以 `copilot-integration-id: vscode-chat`（编辑器身份）访问, 与官方 copilot-cli/sdk 的 `copilot-developer-cli` 不同——同一 enterprise 主机但模型 roster/护栏可能不同（疑似限制2成因）
+
 - 2026-07-12 | 项目 | 整理导出到新仓库 git@github.com:huthvincent/self-evo-agent.git（全新 git 历史）: skill_Opt 全量 + GAA 实验机精选快照 + 新写 docs/{SPEC,HISTORY,RESULTS,STATUS} 综合四件套; 三重凭证扫描零命中, CHANGELOG 个人邮箱已脱敏
 
 - 2026-07-06 | docs | benchmark 选择核实: tau2 确认主选(retail+telecom 划分, airline=50 太小降 OOD); 加 AppWorld 作第二 benchmark(正式实验); refs 增至 47 条

@@ -1,0 +1,9 @@
+[10:17:23] [tau2] agent/user/env/judge all -> github_copilot/gpt-4o
+[10:17:26] [tau2] in-process argv: tau2 run --domain retail --task-set-name retail --num-tasks 1 --num-trials 1 --agent llm_agent --agent-llm github_copilot/gpt-4o --user user_simulator --user-llm github_copilot/gpt-4o --max-steps 30 --seed 42 --max-concurrency 1 --save-to copilot_probe_20260714_101723_tau2
+[10:17:55] metric tau2_exit_code = 0
+[10:17:55] metric tau2_ran = True
+[10:17:55] metric tau2_n_simulations = 1
+[10:17:55] metric tau2_terminations = ['user_stop']
+[10:17:55] metric tau2_rewards = [1.0]
+[10:17:55] [tau2] completed=1/1 rewards=[1.0] terms=['user_stop']
+[10:17:55] metric tau2_tool_calling_ok = True

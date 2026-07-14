@@ -9,43 +9,84 @@ Protocol (docs/sanity_check.md, Gate 1 - ceiling test):
   C. same 30 tasks x 2 trials WITH the library injected into the agent prompt
 Gate verdict: PASS if episode success rate improves by >= +10pp.
 
-Budget: design ~$13, hard abort projection above CAP_USD=$20.
+Budget: design ~$13, hard abort projection above CAP_USD=$20 (anthropic backend).
+Copilot backend is flat-rate (subscription), so the USD projection cap does not
+apply - budget discipline there is request-count / rate-limit based.
 
-Run:  uv run python REPLAY/script/gate1_ceiling.py
+Run (anthropic, full):  uv run python REPLAY/script/gate1_ceiling.py
+Run (copilot pilot):    uv run python REPLAY/script/gate1_ceiling.py \
+                          --backend copilot --model github_copilot/gpt-4o \
+                          --n-tasks 5 --trials 1 --concurrency 2
 """
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import shutil
 import sys
+from pathlib import Path
 
-from shared.llm import CostTracker, chat
-from shared.paths import PROJECT_ROOT, REPLAY_RESULTS, new_run_id
-from shared.runharness import Run
-from shared.tau2_compat import apply_default_model_patches, set_policy_suffix
+# tau2's rich banner emits non-cp1252 glyphs (U+2192); force UTF-8 so this runs
+# on a Windows console (root-caused in REPLAY/script/copilot_probe.py).
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+    except Exception:  # noqa: BLE001 - non-reconfigurable stream, ignore
+        pass
 
-CAP_USD = 20.0
-MODEL = "anthropic/claude-haiku-4-5-20251001"
-N_TASKS, TRIALS, MAX_STEPS, SEED, CONC = 30, 2, 30, 42, 6
+ap = argparse.ArgumentParser(description="Gate 1 ceiling test (see docs/sanity_check.md)")
+ap.add_argument("--backend", choices=["anthropic", "copilot"], default="anthropic",
+                help="LLM_BACKEND for shared.llm AND tau2's litellm model prefix")
+ap.add_argument("--model", default=None,
+                help="agent/user/judge model id (backend-appropriate); default per backend")
+ap.add_argument("--optimizer-model", default=None,
+                help="model that writes the ceiling library; default per backend")
+ap.add_argument("--n-tasks", type=int, default=30)
+ap.add_argument("--trials", type=int, default=2)
+ap.add_argument("--concurrency", type=int, default=6,
+                help="tau2 --max-concurrency (lower for Copilot rate limits)")
+ap.add_argument("--cap-usd", type=float, default=20.0,
+                help="hard USD projection cap (anthropic only; copilot is flat-rate)")
+ap.add_argument("--resume-baseline", default=None,
+                help="prior run dir containing base_results.json (skips phase A)")
+args = ap.parse_args()
+
+# backend must be set BEFORE importing shared.llm (load_dotenv won't override it)
+os.environ["LLM_BACKEND"] = args.backend
+
+# Model defaults per backend. tau2 routes through litellm, so the agent/user
+# model string must carry the provider prefix (anthropic/... | github_copilot/...).
+# The optimizer goes through shared.llm.chat(): the copilot backend adds the
+# github_copilot/ prefix itself, so OPTIMIZER_MODEL is prefix-less there.
+if args.backend == "copilot":
+    MODEL = args.model or "github_copilot/gpt-4o"
+    OPTIMIZER_MODEL = args.optimizer_model or "gpt-4o"
+else:
+    MODEL = args.model or "anthropic/claude-haiku-4-5-20251001"
+    OPTIMIZER_MODEL = args.optimizer_model  # None -> MODEL_OPTIMIZER from .env
+
+from shared.llm import CostTracker, chat  # noqa: E402
+from shared.paths import PROJECT_ROOT, REPLAY_RESULTS, new_run_id  # noqa: E402
+from shared.runharness import Run  # noqa: E402
+from shared.tau2_compat import apply_default_model_patches, set_policy_suffix  # noqa: E402
+
+CAP_USD = args.cap_usd
+N_TASKS, TRIALS, MAX_STEPS, SEED, CONC = args.n_tasks, args.trials, 30, 42, args.concurrency
 GATE_PP = 0.10  # +10 percentage points
+FLAT_RATE = args.backend == "copilot"
 
 apply_default_model_patches(MODEL)
 from tau2.cli import main as tau2_main  # noqa: E402  (after patches)
 from tau2.registry import registry  # noqa: E402
 
-import argparse  # noqa: E402
-from pathlib import Path  # noqa: E402
-
-ap = argparse.ArgumentParser()
-ap.add_argument("--resume-baseline", default=None,
-                help="prior run dir containing base_results.json (skips phase A)")
-args = ap.parse_args()
-
 run_id = new_run_id("gate1_ceiling")
 run = Run(REPLAY_RESULTS, run_id, config={
     "experiment": "Gate1", "domain": "retail", "n_tasks": N_TASKS,
     "trials": TRIALS, "max_steps": MAX_STEPS, "seed": SEED,
-    "model": MODEL, "cap_usd": CAP_USD, "gate_pp": GATE_PP,
+    "backend": args.backend, "model": MODEL, "optimizer_model": OPTIMIZER_MODEL,
+    "concurrency": CONC, "flat_rate": FLAT_RATE,
+    "cap_usd": CAP_USD, "gate_pp": GATE_PP,
     "resumed_baseline_from": args.resume_baseline,
 })
 
@@ -106,7 +147,7 @@ run.metric("A_cost_usd", round(a["cost"], 2))
 
 projected = a["cost"] * 2 + 2.5  # phase C similar cost + optimizer + NL-eval slack
 run.metric("projected_total_usd", round(projected, 2))
-if projected > CAP_USD:
+if not FLAT_RATE and projected > CAP_USD:
     run.finish(conclusion=f"ABORTED before phase C: projection ${projected:.2f} > cap ${CAP_USD}")
     raise SystemExit(1)
 
@@ -143,7 +184,7 @@ library = chat(
     "steps, tool-call ordering, when to check before acting, exchange vs return rules "
     "misapplication). Max 700 tokens total. Output ONLY the markdown bullet list.\n\n"
     + "\n\n".join(blocks),
-    role="optimizer", max_tokens=8000, tracker=tracker)  # reasoning models need headroom
+    role="optimizer", model=OPTIMIZER_MODEL, max_tokens=8000, tracker=tracker)  # reasoning models need headroom
 (run.dir / "library.md").write_text(library)
 if not library.strip() or (library.count("\n- ") + library.count("\n* ")) < 3:
     run.finish(conclusion="ABORTED before phase C: optimizer produced an empty/"

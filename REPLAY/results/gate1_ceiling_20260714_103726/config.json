@@ -1,0 +1,32 @@
+{
+  "experiment": "Gate1",
+  "domain": "retail",
+  "n_tasks": 5,
+  "trials": 1,
+  "max_steps": 30,
+  "seed": 42,
+  "backend": "copilot",
+  "model": "github_copilot/gpt-4o",
+  "optimizer_model": "gpt-4o",
+  "concurrency": 2,
+  "flat_rate": true,
+  "cap_usd": 20.0,
+  "gate_pp": 0.1,
+  "resumed_baseline_from": null,
+  "run_id": "gate1_ceiling_20260714_103726",
+  "git_commit": "25a08b8",
+  "started_at": "2026-07-14T10:37:26",
+  "argv": [
+    "REPLAY/script/gate1_ceiling.py",
+    "--backend",
+    "copilot",
+    "--model",
+    "github_copilot/gpt-4o",
+    "--n-tasks",
+    "5",
+    "--trials",
+    "1",
+    "--concurrency",
+    "2"
+  ]
+}

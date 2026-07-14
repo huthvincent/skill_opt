@@ -3,6 +3,12 @@
 Backends, selected by LLM_BACKEND in .env:
   - "anthropic": direct Anthropic API (dev machine, smoke tests)
   - "bedrock":   AWS Bedrock Claude (large-scale experiment machine)
+  - "copilot":   GitHub Copilot Chat API via litellm's github_copilot/ route
+                 (acts as a Copilot IDE *client* on your GitHub entitlement;
+                 no per-token USD, first call triggers device-flow login).
+                 Model names differ from Anthropic - set MODEL_* to Copilot
+                 model ids (e.g. gpt-4o, claude-sonnet-4); the "github_copilot/"
+                 prefix is added here.
 
 Experiment scripts must never import anthropic/boto3 directly - they call
 chat() below, so switching machines is a .env change, zero code change.
@@ -47,17 +53,30 @@ class CostTracker:
     spent_usd: float = 0.0
     calls: int = 0
     by_model: dict = field(default_factory=dict)
+    tokens_in: int = 0
+    tokens_out: int = 0
 
     def add(self, model: str, in_tok: int, out_tok: int) -> None:
         p_in, p_out = PRICES_PER_MTOK.get(model, _DEFAULT_PRICE)
         cost = in_tok * p_in / 1e6 + out_tok * p_out / 1e6
         self.spent_usd += cost
         self.calls += 1
+        self.tokens_in += in_tok
+        self.tokens_out += out_tok
         self.by_model[model] = self.by_model.get(model, 0.0) + cost
         if self.max_cost_usd is not None and self.spent_usd >= self.max_cost_usd:
             raise BudgetExceeded(
                 f"budget cap hit: spent ~${self.spent_usd:.2f} >= ${self.max_cost_usd:.2f}"
             )
+
+    def add_flat(self, model: str, in_tok: int, out_tok: int) -> None:
+        """Flat-rate backend (Copilot subscription): no marginal USD, so we
+        meter tokens + call count only. Budget discipline for this backend is
+        request-count / rate-limit based, not USD (CONSTITUTION section 6)."""
+        self.calls += 1
+        self.tokens_in += in_tok
+        self.tokens_out += out_tok
+        self.by_model[model] = self.by_model.get(model, 0.0) + 0.0
 
 
 def _client():
@@ -78,6 +97,59 @@ def _mock_chat(prompt: str, model: str, tracker: CostTracker | None) -> str:
     return f"[mock reply to {len(prompt)} chars]"
 
 
+def _copilot_chat(
+    prompt: str,
+    *,
+    system: str | None,
+    model: str,
+    max_tokens: int,
+    temperature: float | None,
+    tracker: CostTracker | None,
+) -> str:
+    """LLM_BACKEND=copilot: call GitHub Copilot's Chat API via litellm.
+
+    litellm's github_copilot/ route acts as a Copilot IDE client: on first use
+    it runs the GitHub device-flow login (prints a URL + code), caches the
+    token under ~/.config/litellm/github_copilot/, then posts to Copilot's
+    endpoint. Inference runs on GitHub's servers, billed to your Copilot
+    entitlement (no per-token USD)."""
+    import litellm
+
+    messages: list[dict] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+    kwargs: dict = dict(
+        model=f"github_copilot/{model}",
+        messages=messages,
+        max_tokens=max_tokens,
+    )
+    if temperature is not None:
+        kwargs["temperature"] = temperature
+    try:
+        resp = litellm.completion(**kwargs)
+    except Exception as e:  # some models reject temperature outright
+        if "temperature" in kwargs and "temperature" in str(e).lower():
+            kwargs.pop("temperature")
+            resp = litellm.completion(**kwargs)
+        else:
+            raise
+    if tracker is not None:
+        u = getattr(resp, "usage", None)
+        tracker.add_flat(
+            model,
+            int(getattr(u, "prompt_tokens", 0) or 0),
+            int(getattr(u, "completion_tokens", 0) or 0),
+        )
+    text = resp.choices[0].message.content or ""
+    if not text.strip():
+        raise RuntimeError(
+            f"empty text reply from copilot/{model} (usage="
+            f"{getattr(resp, 'usage', None)}) - raise max_tokens or pick "
+            f"another model")
+    return text
+
+
 def chat(
     prompt: str,
     *,
@@ -90,8 +162,13 @@ def chat(
 ) -> str:
     """One user-turn completion. Returns the text of the reply."""
     model = model or os.environ.get(f"MODEL_{role.upper()}", "claude-sonnet-5")
-    if os.environ.get("LLM_BACKEND", "anthropic").lower() == "mock":
+    backend = os.environ.get("LLM_BACKEND", "anthropic").lower()
+    if backend == "mock":
         return _mock_chat(prompt, model, tracker)
+    if backend == "copilot":
+        return _copilot_chat(
+            prompt, system=system, model=model, max_tokens=max_tokens,
+            temperature=temperature, tracker=tracker)
     kwargs: dict = dict(
         model=model,
         max_tokens=max_tokens,

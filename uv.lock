@@ -2762,6 +2762,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic", extra = ["bedrock"] },
+    { name = "litellm" },
     { name = "matplotlib" },
     { name = "pandas" },
     { name = "python-dotenv" },
@@ -2774,6 +2775,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", extras = ["bedrock"], specifier = ">=0.40" },
+    { name = "litellm", specifier = ">=1.82.6" },
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "python-dotenv", specifier = ">=1.0" },

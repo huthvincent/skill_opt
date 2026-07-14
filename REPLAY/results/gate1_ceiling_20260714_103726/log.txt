@@ -1,0 +1,19 @@
+[10:37:26] Phase A: baseline (no library)
+[10:38:54] metric A_success = 0.0
+[10:38:54] metric A_episodes = 5
+[10:38:54] metric A_errors = 0
+[10:38:54] metric A_cost_usd = 0
+[10:38:54] metric projected_total_usd = 2.5
+[10:38:54] Phase B: generating ceiling library from failures + gold criteria
+[10:38:54] metric A_failed_task_ids = ['0', '1', '2', '3', '4']
+[10:39:00] metric B_optimizer_cost_usd = 0.0
+[10:39:00] metric B_library_entries = 16
+[10:39:00] library written (2388 chars)
+[10:39:00] Phase C: with library injected
+[10:40:32] metric C_success = 0.2
+[10:40:32] metric C_episodes = 5
+[10:40:32] metric C_errors = 0
+[10:40:32] metric C_cost_usd = 0
+[10:40:32] metric delta_pp = 20.0
+[10:40:32] metric total_spend_usd = 0.0
+[10:40:32] metric gate1_verdict = PASS

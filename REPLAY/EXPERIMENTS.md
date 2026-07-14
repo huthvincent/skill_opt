@@ -8,6 +8,7 @@
 |---|---|---|---|---|---|
 | E0.0 | 零 LLM 结构探测：任务加载/事后 verifier/persona 注入/env 构建 | 无 LLM 调用 | $0 | ✅ | tau2_probe_20260705_043549 |
 | E0.1 | τ²-bench 环境 + `shared/llm.py` 通路 + REPORT 自动生成全链路跑通 | retail 域 5 任务，agent=haiku 级，无经验库；tau2 内部走 litellm 直接读 ANTHROPIC_API_KEY；**两处运行时 patch**（NL 判卷模型 gpt-4.1→haiku、宽容 JSON 解析），见 smoke_tau2.py 注释 | 实际 ~$0.96（含 2 轮诊断） | ✅ | smoke_tau2_20260705_110319 |
+| E0.5 | Copilot 后端可行性：litellm `github_copilot/` 路由能否 (a) 认证+返回补全 (b) 作 tau2 agent 跑通域 function-calling 拿到 reward | chat + tau2 两阶段；agent/user/env/judge 全用 `github_copilot/gpt-4o`；复用 tau2_compat 两 patch；flat-rate 无 USD | ~$0（订阅额度） | ✅ **GO** | copilot_probe_20260714_101426(chat) / _101723(tau2) |
 | E0.2 | "历史日志"生成管线 + 日志 schema 定稿 | 弱 agent × 3 persona，retail 域 30 session | ≤$15 | ⬜ | |
 | E0.3 | 模块 A 提案质量人工检查 | E0.2 日志 → 失败聚类 → 候选条目，人工评 10 条 | ≤$10 | ⬜ | |
 | E0.4 | replay 探针 test-retest 稳定性 | 同一决策点重放 ×5，测判定一致率 | ≤$10 | ⬜ | |
@@ -16,7 +17,7 @@
 
 | ID | 目的 | 配置要点 | 预算 | 状态 | run_id |
 |---|---|---|---|---|---|
-| Gate 1 | 天花板：好经验库到底有没有用（≥+10pp 过） | retail 30 题 × 2 trial × {无库, 强库}；强库由 optimizer 看失败轨迹+gold criteria 生成（允许作弊但禁任务专属 ID）；haiku 全角色 | 设计 ~$13 / 硬顶 $20；**实花 ~$18.4 触帽** | ⛔ **中断：API 账户余额耗尽**。3 次尝试均未获干净判定（fable 空库 bug → 余额耗尽污染）；沉淀资产：干净基线 A=70%(n=60)、12 条高质量天花板库、n=60 噪声带 ±10pp 实测。待充值后按 owner 选的方案重测 | gate1_ceiling_20260705_{185023,185719,190509} |
+| Gate 1 | 天花板：好经验库到底有没有用（≥+10pp 过） | retail 30 题 × 2 trial × {无库, 强库}；强库由 optimizer 看失败轨迹+gold criteria 生成（允许作弊但禁任务专属 ID）；haiku 全角色 | 设计 ~$13 / 硬顶 $20；**实花 ~$18.4 触帽** | ⛔ **Anthropic 侧中断（余额耗尽）** → 2026-07-14 试走 **Copilot 后端**（flat-rate 无余额问题）：gpt-4o 管线파일럿通过（_103726, $0）；**但 claude-haiku-4.5 파일럿暴露阻断问题**（_105916）：**Copilot 版 Claude 拒绝扮演 tau2 user simulator**（护栏所致），无法复现 Rui 的 Anthropic-haiku 基线。→ 正式 sweep 若走 Copilot 须用 gpt 系且不可比旧数据；要复现 Rui 基线仍须 Anthropic/Bedrock | gate1_ceiling_20260705_{185023,185719,190509} + _20260714_{103726,105916} |
 
 ## E1 主实验系列（需 `Doc/budget_estimate.md` 审批后启动）
 

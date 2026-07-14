@@ -1,0 +1,12 @@
+{
+  "tau2_exit_code": 0,
+  "tau2_ran": true,
+  "tau2_n_simulations": 1,
+  "tau2_terminations": [
+    "user_stop"
+  ],
+  "tau2_rewards": [
+    1.0
+  ],
+  "tau2_tool_calling_ok": true
+}

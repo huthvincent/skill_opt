@@ -1,0 +1,5 @@
+[10:14:27] [chat] LLM_BACKEND=copilot model=gpt-4o - first call may prompt device-flow login (visit the printed github.com URL + code)
+[10:15:18] metric chat_ok = True
+[10:15:18] metric chat_reply = OK
+[10:15:18] metric chat_tokens = in=12 out=2
+[10:15:18] [chat] reply='OK' tokens_in=12 tokens_out=2

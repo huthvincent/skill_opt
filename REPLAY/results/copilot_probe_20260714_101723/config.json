@@ -1,0 +1,25 @@
+{
+  "experiment": "E0.5",
+  "backend": "copilot",
+  "model": "gpt-4o",
+  "stage": "tau2",
+  "domain": "retail",
+  "num_tasks": 1,
+  "max_steps": 30,
+  "seed": 42,
+  "note": "flat-rate Copilot subscription; no per-token USD metering",
+  "run_id": "copilot_probe_20260714_101723",
+  "git_commit": "25a08b8",
+  "started_at": "2026-07-14T10:17:23",
+  "argv": [
+    "REPLAY/script/copilot_probe.py",
+    "--stage",
+    "tau2",
+    "--model",
+    "gpt-4o",
+    "--num-tasks",
+    "1",
+    "--max-steps",
+    "30"
+  ]
+}

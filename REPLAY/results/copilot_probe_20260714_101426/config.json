@@ -1,0 +1,21 @@
+{
+  "experiment": "E0.5",
+  "backend": "copilot",
+  "model": "gpt-4o",
+  "stage": "chat",
+  "domain": "retail",
+  "num_tasks": 1,
+  "max_steps": 30,
+  "seed": 42,
+  "note": "flat-rate Copilot subscription; no per-token USD metering",
+  "run_id": "copilot_probe_20260714_101426",
+  "git_commit": "25a08b8",
+  "started_at": "2026-07-14T10:14:26",
+  "argv": [
+    "REPLAY/script/copilot_probe.py",
+    "--stage",
+    "chat",
+    "--model",
+    "gpt-4o"
+  ]
+}

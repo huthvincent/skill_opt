@@ -13,4 +13,5 @@
 | `tau2_probe.py` | E0.0：零 LLM 结构探测（任务加载、事后 verifier、persona 注入点、env 构建） | ✅ 2026-07-05 通过 |
 | `smoke_tau2.py` | E0.1 冒烟：τ²-bench 单域跑通全链路。**含两个必要的运行时 patch**（不改上游）：① tau2 的 NL_ASSERTIONS 判卷硬编码 gpt-4.1 且无 CLI 开关 → in-process 覆盖模块常量为 Claude；② Claude 判卷回复带 markdown 栏 → 宽容 JSON 解析 shim。后续所有跑 tau2 的脚本都要复用这两个 patch（届时抽到 shared/） | ✅ 2026-07-05 通过（4/5 成功, $0.094/集） |
 | `gate1_ceiling.py` | Sanity Gate 1：天花板测试（基线 vs 强经验库，30 题×2 trial）。patch 逻辑已抽到 `shared/tau2_compat.py`（含新增的 policy 注入 patch） | 🔵 运行中 |
+| `copilot_probe.py` | E0.5：GitHub Copilot 后端（`LLM_BACKEND=copilot`）可行性探针。两阶段：chat（litellm 设备流认证+补全）/ tau2（Copilot 模型作 agent 跑单 retail 任务，验域 function-calling+reward）。含 Windows UTF-8 stdout 修复（tau2 rich banner 有 U+2192，cp1252 会崩） | ✅ 2026-07-14 GO（chat reply=OK；tau2 reward=1.0, tool_calling_ok=True） |
 | `gen_logs_tau2.py` | E0.2：弱 agent × persona 生成"历史日志"（persona 全部自注入——E0.0 发现原生任务 persona 为空） | ⬜ 待写 |
